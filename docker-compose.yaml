@@ -1,0 +1,106 @@
+services:
+  accounts:
+    build: ./accounts
+    ports:
+      - "18080:18080"
+    depends_on:
+      - accounts-db
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://accounts-db:5432/accounts
+      - SPRING_DATASOURCE_USERNAME=accounts
+      - SPRING_DATASOURCE_PASSWORD=accounts
+      - SPRING_LIQUIBASE_URL=jdbc:postgresql://accounts-db:5432/accounts
+
+  accounts-db:
+    image: postgres:17-alpine
+    volumes:
+      - /var/lib/postgresql/data/
+    ports:
+      - "15432:5432"
+    environment:
+      - POSTGRES_DB=accounts
+      - POSTGRES_USER=accounts
+      - PGUSER=accounts
+      - POSTGRES_PASSWORD=accounts
+
+  exchange:
+    build: ./exchange
+    ports:
+      - "18081:18081"
+    depends_on:
+      - rates-db
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://rates-db:5432/rates
+      - SPRING_DATASOURCE_USERNAME=rates
+      - SPRING_DATASOURCE_PASSWORD=rates
+      - SPRING_LIQUIBASE_URL=jdbc:postgresql://rates-db:5432/rates
+
+  rates-db:
+    image: postgres:17-alpine
+    volumes:
+      - /var/lib/postgresql/data/
+    ports:
+      - "15433:5432"
+    environment:
+      - POSTGRES_DB=rates
+      - POSTGRES_USER=rates
+      - PGUSER=rates
+      - POSTGRES_PASSWORD=rates
+
+  exchange-generator:
+    build: ./exchange-generator
+    ports:
+      - "18082:18082"
+    depends_on:
+      - exchange
+    environment:
+      - EXCHANGE-GENERATOR_SERVER_URL=http://exchange:18081
+
+  blocker:
+    build: ./blocker
+    ports:
+      - "18083:18083"
+
+  notifications:
+    build: ./notifications
+    ports:
+      - "18084:18084"
+
+  cash:
+    build: ./cash
+    ports:
+      - "18085:18085"
+    depends_on:
+      - accounts
+      - notifications
+      - blocker
+    environment:
+      - ACCOUNTS_SERVER_URL=http://accounts:18080
+      - NOTIFICATIONS_SERVER_URL=http://notifications:18084
+      - BLOCKER_SERVER_URL=http://blocker:18083
+
+  transfer:
+    build: ./transfer
+    ports:
+      - "18086:18086"
+    depends_on:
+      - notifications
+      - accounts
+      - blocker
+      - exchange
+    environment:
+      - ACCOUNTS_SERVER_URL=http://accounts:18080
+      - NOTIFICATIONS_SERVER_URL=http://notifications:18084
+      - BLOCKER_SERVER_URL=http://blocker:18083
+      - EXCHANGE_SERVER_URL=http://exchange:18086
+
+  front:
+    build: ./front
+    ports:
+      - "18087:18087"
+    depends_on:
+      - exchange
+      - accounts
+    environment:
+      - ACCOUNTS_SERVER_URL=http://accounts:18080
+      - EXCHANGE_SERVER_URL=http://exchange:18086

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/accounts.iml" filepath="$PROJECT_DIR$/.idea/modules/accounts.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/accounts.test.iml" filepath="$PROJECT_DIR$/.idea/modules/accounts.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/accounts/bankapp.accounts.main.iml" filepath="$PROJECT_DIR$/.idea/modules/accounts/bankapp.accounts.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/blocker/bankapp.blocker.main.iml" filepath="$PROJECT_DIR$/.idea/modules/blocker/bankapp.blocker.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/cash/bankapp.cash.main.iml" filepath="$PROJECT_DIR$/.idea/modules/cash/bankapp.cash.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/exchange/bankapp.exchange.main.iml" filepath="$PROJECT_DIR$/.idea/modules/exchange/bankapp.exchange.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/front/bankapp.front.main.iml" filepath="$PROJECT_DIR$/.idea/modules/front/bankapp.front.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/notifications/bankapp.notifications.main.iml" filepath="$PROJECT_DIR$/.idea/modules/notifications/bankapp.notifications.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/transfer/bankapp.transfer.main.iml" filepath="$PROJECT_DIR$/.idea/modules/transfer/bankapp.transfer.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/transfer2/transfer.iml" filepath="$PROJECT_DIR$/transfer2/transfer.iml" />
+    </modules>
+  </component>
+</project>

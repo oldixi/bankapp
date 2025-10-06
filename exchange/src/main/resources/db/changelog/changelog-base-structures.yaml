@@ -1,0 +1,29 @@
+databaseChangeLog:
+  - changeSet:
+      id: create_currency_rate
+      author: oldixi
+      failOnError: false
+      changes:
+        - createTable:
+            tableName: currency_rate
+            remarks: Курс валюты к рублю
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                  name: currency
+                  type: varchar(10)
+                  remarks: Короткое название валюты
+              - column:
+                  constraints:
+                    nullable: false
+                  name: buy_rate
+                  type: double
+                  remarks: Покупка
+              - column:
+                  constraints:
+                    nullable: false
+                  name: sell_rate
+                  type: double
+                  remarks: Продажа
