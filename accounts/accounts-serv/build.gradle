@@ -6,7 +6,6 @@ plugins {
 
 group = 'ru.yandex.accounts.serv'
 version = '0.0.1-SNAPSHOT'
-description = 'Template for microservices'
 
 java {
     toolchain {
@@ -35,7 +34,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.liquibase:liquibase-core'
-    //implementatioan 'org.springframework.cloud:spring-cloud-starter-consul-config'
+    implementation 'org.springframework.cloud:spring-cloud-starter-consul-config'
     implementation 'org.springframework.cloud:spring-cloud-starter-consul-discovery'
     implementation 'org.modelmapper:modelmapper:2.3.5'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
