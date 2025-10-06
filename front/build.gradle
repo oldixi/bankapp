@@ -4,7 +4,7 @@ plugins {
     id 'io.spring.dependency-management' version '1.1.7'
 }
 
-group = 'ru.yandex.practicum'
+group = 'ru.yandex.front'
 version = '0.0.1-SNAPSHOT'
 description = 'Template for microservices'
 
@@ -37,8 +37,8 @@ dependencies {
     implementation 'org.springframework.cloud:spring-cloud-starter-consul-discovery'
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
     implementation 'org.modelmapper:modelmapper:2.3.5'
-    implementation project(':exchange')
-    implementation project(':accounts')
+    implementation project(':exchange:exchange-dto')
+    implementation project(':accounts:accounts-dto')
     implementation project(':cash')
     implementation project(':transfer')
     compileOnly 'org.projectlombok:lombok'

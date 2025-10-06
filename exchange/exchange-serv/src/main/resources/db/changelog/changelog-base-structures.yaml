@@ -1,0 +1,29 @@
+databaseChangeLog:
+  - changeSet:
+      id: create_rate
+      author: oldixi
+      failOnError: false
+      changes:
+        - createTable:
+            tableName: currency_rate
+            remarks: Курс валют
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                  name: name
+                  type: varchar(10)
+                  remarks: Код валюты
+              - column:
+                  constraints:
+                    nullable: false
+                  name: title
+                  type: varchar(250)
+                  remarks: Наименование валюты
+              - column:
+                  constraints:
+                    nullable: false
+                  name: value
+                  type: number
+                  remarks: Значение курса

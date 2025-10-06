@@ -4,7 +4,7 @@ plugins {
     id 'io.spring.dependency-management' version '1.1.7'
 }
 
-group = 'ru.yandex.practicum'
+group = 'ru.yandex.cash'
 version = '0.0.1-SNAPSHOT'
 description = 'Template for microservices'
 
@@ -35,9 +35,10 @@ dependencies {
     implementation 'org.liquibase:liquibase-core'
     implementation 'org.springframework.cloud:spring-cloud-starter-consul-config'
     implementation 'org.springframework.cloud:spring-cloud-starter-consul-discovery'
-    implementation project(':accounts')
-    implementation project(':notifications')
-    implementation project(':blocker')
+    implementation project(':accounts:accounts-dto')
+    implementation project(':exchange:exchange-dto')
+    //implementation project(':notifications')
+    //implementation project(':blocker')
     compileOnly 'org.projectlombok:lombok'
     //developmentOnly 'org.springframework.boot:spring-boot-docker-compose'
     runtimeOnly 'org.postgresql:postgresql'

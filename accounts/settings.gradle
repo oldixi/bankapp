@@ -1,5 +1,0 @@
-rootProject.name = 'accounts'
-include 'accounts:accounts-dto'
-findProject(':accounts:accounts-dto')?.name = 'accounts-dto'
-include 'accounts:accounts-serv'
-findProject(':accounts:accounts-serv')?.name = 'accounts-serv'

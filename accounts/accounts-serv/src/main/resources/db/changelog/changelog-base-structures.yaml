@@ -1,0 +1,88 @@
+databaseChangeLog:
+  - changeSet:
+      id: create_user
+      author: oldixi
+      failOnError: false
+      changes:
+        - createTable:
+            tableName: users
+            remarks: Пользователи
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                  name: login
+                  type: varchar(250)
+                  remarks: логин пользователя
+              - column:
+                  constraints:
+                    nullable: false
+                  name: password
+                  type: varchar(4000)
+                  remarks: hash пароля пользователя
+              - column:
+                  constraints:
+                    nullable: false
+                  name: name
+                  type: varchar(500)
+                  remarks: Фамилия Имя пользователя
+              - column:
+                  constraints:
+                    nullable: false
+                  name: email
+                  type: varchar(250)
+                  remarks: email пользователя для информирования
+              - column:
+                  constraints:
+                    nullable: false
+                  name: birthdate
+                  type: timestamp
+                  remarks: дата рождения пользователя
+
+  - changeSet:
+      id: create_account
+      author: oldixi
+      failOnError: false
+      changes:
+        - createTable:
+            tableName: account
+            remarks: Лицевые счета пользователя
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                  name: id
+                  type: bigserial
+                  remarks: id лицевого счета
+                  autoIncrement: true
+              - column:
+                  name: amount
+                  type: number
+                  remarks: Сумма заказа
+                  defaultValueNumeric: "0"
+              - column:
+                  name: currency
+                  type: varchar(250)
+                  remarks: Валюта счета
+              - column:
+                  name: login
+                  type: varchar(250)
+                  remarks: Логин пользователя, которому принадлежит счет
+
+  - changeSet:
+      id: account_pkey
+      author: oldixi
+      failOnError: false
+      changes:
+        - addForeignKeyConstraint:
+            baseTableName: account
+            baseColumnNames: login
+            constraintName: account_fkey
+            deferrable: false
+            initiallyDeferred: false
+            onDelete: no action
+            onUpdate: no action
+            referencedColumnNames: login
+            referencedTableName: users
