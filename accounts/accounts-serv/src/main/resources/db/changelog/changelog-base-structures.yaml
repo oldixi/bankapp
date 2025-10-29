@@ -1,12 +1,12 @@
 databaseChangeLog:
   - changeSet:
-      id: create_user
+      id: create_accounts
       author: oldixi
       failOnError: false
       changes:
         - createTable:
-            tableName: users
-            remarks: Пользователи
+            tableName: accounts
+            remarks: Лицевые счета пользователей
             columns:
               - column:
                   constraints:
@@ -14,7 +14,7 @@ databaseChangeLog:
                     primaryKey: true
                   name: login
                   type: varchar(250)
-                  remarks: логин пользователя
+                  remarks: Логин пользователя
               - column:
                   constraints:
                     nullable: false
@@ -38,51 +38,14 @@ databaseChangeLog:
                     nullable: false
                   name: birthdate
                   type: timestamp
-                  remarks: дата рождения пользователя
-
-  - changeSet:
-      id: create_account
-      author: oldixi
-      failOnError: false
-      changes:
-        - createTable:
-            tableName: account
-            remarks: Лицевые счета пользователя
-            columns:
+                  remarks: Дч ата рождения пользователя
               - column:
-                  constraints:
-                    nullable: false
-                    primaryKey: true
-                  name: id
-                  type: bigserial
-                  remarks: id лицевого счета
-                  autoIncrement: true
-              - column:
-                  name: amount
+                  name: balance
                   type: number
-                  remarks: Сумма заказа
+                  remarks: Баланс счета
                   defaultValueNumeric: "0"
               - column:
                   name: currency
                   type: varchar(250)
                   remarks: Валюта счета
-              - column:
-                  name: login
-                  type: varchar(250)
-                  remarks: Логин пользователя, которому принадлежит счет
-
-  - changeSet:
-      id: account_pkey
-      author: oldixi
-      failOnError: false
-      changes:
-        - addForeignKeyConstraint:
-            baseTableName: account
-            baseColumnNames: login
-            constraintName: account_fkey
-            deferrable: false
-            initiallyDeferred: false
-            onDelete: no action
-            onUpdate: no action
-            referencedColumnNames: login
-            referencedTableName: users
+                  defaultValue: "RUB"

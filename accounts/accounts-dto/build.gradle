@@ -6,7 +6,6 @@ plugins {
 
 group = 'ru.yandex.accounts.dto'
 version = '0.0.1-SNAPSHOT'
-description = 'Template for microservices'
 
 java {
     toolchain {
@@ -28,18 +27,18 @@ ext {
     set('springCloudVersion', "2025.0.0")
 }
 
-dependencies {
+/*dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
-    //implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
     //implementation 'org.springframework.boot:spring-boot-starter-web'
     //implementatioan 'org.springframework.cloud:spring-cloud-starter-consul-config'
     //implementation 'org.springframework.cloud:spring-cloud-starter-consul-discovery'
-    //implementation 'org.modelmapper:modelmapper:2.3.5'
+    implementation 'org.modelmapper:modelmapper:2.3.5'
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-}
+}*/
 
 dependencyManagement {
     imports {

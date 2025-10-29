@@ -10,10 +10,9 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/accounts" />
-            <option value="$PROJECT_DIR$/blocker" />
+            <option value="$PROJECT_DIR$/accounts/accounts-dto" />
+            <option value="$PROJECT_DIR$/accounts/accounts-serv" />
             <option value="$PROJECT_DIR$/cash" />
-            <option value="$PROJECT_DIR$/exchange" />
-            <option value="$PROJECT_DIR$/exchange-generator" />
             <option value="$PROJECT_DIR$/front" />
             <option value="$PROJECT_DIR$/notifications" />
             <option value="$PROJECT_DIR$/transfer" />

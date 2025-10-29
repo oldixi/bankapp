@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: cash
+  cloud:
+    consul:
+      host: localhost
+      port: 8500
+      config:
+        enabled: true
+        default-context: apps
+        format: KEY_VALUE
+        fail-fast: false
+      discovery:
+        enabled: true
+  config:
+    import:
+      - "optional:consul:"
+
+logging:
+  level:
+    org.springframework.boot.context.config: info
+    org.springframework.cloud.consul: info
+    org.springframework.cloud.bootstrap: info
+    com.ecwid.consul: info
