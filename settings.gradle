@@ -1,9 +1,22 @@
+pluginManagement {
+    repositories {
+        mavenCentral()
+        gradlePluginPortal()
+    }
+    plugins {
+        id 'org.springframework.boot' version '3.5.5'
+        id 'io.spring.dependency-management' version '1.1.7'
+        id 'org.springframework.cloud.contract' version '4.1.2'
+    }
+}
+
 rootProject.name = 'bankapp'
-include ':accounts'
 include ':cash'
 include ':transfer'
 include ':notifications'
 include ':front'
+include ':gateway'
+include ':accounts'
 include ':accounts:accounts-dto'
 findProject(':accounts:accounts-dto')?.name = 'accounts-dto'
 include ':accounts:accounts-serv'

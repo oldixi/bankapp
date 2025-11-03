@@ -19,7 +19,8 @@ public class AccountDto {
     private String password;
     private String email;
     private LocalDate birthdate;
-    private Double balance;
+    @Builder.Default
+    private Double balance = 0.0;
     @Builder.Default
     private List<String> errors = new ArrayList<>();
 }

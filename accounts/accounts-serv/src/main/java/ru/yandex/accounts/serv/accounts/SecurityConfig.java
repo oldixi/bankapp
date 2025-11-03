@@ -6,6 +6,7 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.SessionManagementConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 
@@ -16,15 +17,14 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                        .sessionCreationPolicy(SessionCreationPolicy.ALWAYS)
+                        .sessionFixation(SessionManagementConfigurer.SessionFixationConfigurer::migrateSession)
+                        .maximumSessions(1)
+                        .maxSessionsPreventsLogin(false))
                 .oauth2Client(Customizer.withDefaults())
-                .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/actuator/**", "/fallback/**").permitAll()
-                        .requestMatchers("/api/accounts/signup").permitAll()
-                        .anyRequest().authenticated())
-                /*.oauth2ResourceServer(oauth2 -> oauth2
-                        .jwt(jwt -> jwt.)
-                )*/
+                .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
+                //.oauth2ResourceServer(oauth2 -> oauth2.disable())
+                .authorizeHttpRequests(authz -> authz.anyRequest().authenticated())
                 .csrf(AbstractHttpConfigurer::disable);
         return http.build();
     }

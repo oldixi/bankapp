@@ -3,6 +3,7 @@ package ru.yandex.accounts.serv.accounts;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.accounts.dto.AccountDto;
 import ru.yandex.accounts.dto.AccountTransferDto;
@@ -15,6 +16,11 @@ import java.util.List;
 @RequestMapping("/api/accounts")
 public class AccountController {
     private final AccountService accountService;
+
+    @GetMapping("/{login}/login")
+    public ResponseEntity</*UserDetails*/AccountDto> loadUserByUsername(@PathVariable String login) {
+        return ResponseEntity.ok(accountService.loadUserByUsername(login));
+    }
 
     @PostMapping("/signup")
     public ResponseEntity<AccountDto> register(@Valid @RequestBody NewAccountDto request) {
@@ -35,14 +41,14 @@ public class AccountController {
 
     @PostMapping("/{login}/edit")
     public ResponseEntity<AccountDto> updateUser(@PathVariable String login,
-                                                 @RequestParam String name,
-                                                 @RequestParam String email,
-                                                 @RequestParam String birthdate) {
+                                                 @RequestParam(required = false) String name,
+                                                 @RequestParam(required = false) String email,
+                                                 @RequestParam(required = false) String birthdate) {
         return ResponseEntity.ok(accountService.editUserInfo(login, name, email, birthdate));
     }
 
     @PostMapping("/{login}/balance")
-    public ResponseEntity<AccountDto> updateBalance(@PathVariable String login, @RequestBody Double balance) {
+    public ResponseEntity<AccountDto> updateBalance(@PathVariable String login, @RequestParam Double balance) {
         return ResponseEntity.ok(accountService.saveNewBalance(login, balance));
     }
 
@@ -51,7 +57,7 @@ public class AccountController {
         return ResponseEntity.ok(accountService.getAccounts(login));
     }
 
-    @DeleteMapping("/{login}")
+    @PostMapping("/{login}/delete")
     public ResponseEntity<AccountDto> deleteAccount(@PathVariable String login) {
         return ResponseEntity.ok(accountService.delete(login));
     }

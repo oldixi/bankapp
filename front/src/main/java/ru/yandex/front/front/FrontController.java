@@ -1,54 +1,51 @@
 package ru.yandex.front.front;
 
+import feign.FeignException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.core.oidc.user.OidcUser;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import ru.yandex.accounts.dto.AccountDto;
-
-import java.time.LocalDate;
+import ru.yandex.accounts.dto.NewAccountDto;
+import ru.yandex.front.api.AccountsClient;
 
 @Controller
-@RequestMapping()
+@RequestMapping
 @RequiredArgsConstructor
 @Slf4j
 public class FrontController {
     private final FrontService service;
+    private final AccountsClient accountsClient;
 
     /*
-    GET "/main/login" - домашняя страница банковского приложения пользователя
+    GET "/" - домашняя страница банковского приложения пользователя
     Возвращает: редирект на страницу банковского приложения /user/main
     */
     @GetMapping("/")
-    public String home(@AuthenticationPrincipal OidcUser principal) {
-        if (principal != null) {
+    public String home(@AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails != null) {
             return "redirect:/user/main";
         }
         return "redirect:/login";
     }
 
-    @GetMapping("/login")
-    public String login() {
-        return "login";
-    }
-
     /*
-    GET "/main/login" - страница банковского приложения пользователя
+    GET "/user/main" - страница банковского приложения пользователя
     Возвращает: шаблон "main.html"
     */
     @GetMapping("/user/main")
-    public String userMain(@AuthenticationPrincipal OidcUser principal, Model model) {
-        if (principal == null) {
+    public String userMain(@AuthenticationPrincipal UserDetails userDetails, Model model) {
+        if (userDetails == null) {
             return "redirect:/login";
         }
 
-        String login = principal.getPreferredUsername();
+        String login = userDetails.getUsername();
         AccountDto account = service.getAccount(login);
 
         model.addAttribute("login", login);
@@ -61,12 +58,21 @@ public class FrontController {
     }
 
     /*
-    GET "/logout" - страница выхода из банковского приложения пользователя
-    Возвращает: шаблон редирект на /login
+    GET "/login" - страница входа ы банковске приложение пользователя
+    Возвращает: шаблон login
     */
-    @GetMapping("/logout")
-    public String logout(HttpServletRequest request, HttpServletResponse response) {
-        return "redirect:/login?logout";
+    @GetMapping("/login")
+    public String loginPage(@RequestParam(value = "error", required = false) String error,
+                            @RequestParam(value = "logout", required = false) String logout,
+                            Model model) {
+        if (error != null) {
+            model.addAttribute("error", "Неверный логин и/или пароль");
+        }
+
+        if (logout != null) {
+            model.addAttribute("message", "Вы успешно вышли из системы");
+        }
+        return "login";
     }
 
     /*
@@ -75,11 +81,6 @@ public class FrontController {
     */
     @GetMapping("/signup")
     public String signupPage(Model model) {
-        model.addAttribute("login", "");
-        model.addAttribute("name", "");
-        model.addAttribute("email", "");
-        model.addAttribute("birthdate", "");
-        model.addAttribute("errors", "");
         return "signup";
     }
 
@@ -93,7 +94,7 @@ public class FrontController {
                 "name" - ФИ пользователя
     Возвращает: редирект на форму логина "/login"
     */
-    @PostMapping("/signup")
+/*    @PostMapping("/signup")
     public String signup(@RequestParam String login,
                          @RequestParam String password,
                          @RequestParam String confirmPassword,
@@ -109,10 +110,63 @@ public class FrontController {
             redirectAttributes.addFlashAttribute("name", name);
             redirectAttributes.addFlashAttribute("email", email);
             redirectAttributes.addFlashAttribute("birthdate", birthdate);
+            log.info("Ошибки параметров регистрации {}", newAccount.getErrors());
             return "redirect:/signup";
         } else {
             return "redirect:/login";
         }
+    }*/
+
+    @PostMapping("/signup")
+    public String signup(@RequestParam String login,
+                         @RequestParam String password,
+                         @RequestParam String confirmPassword,
+                         @RequestParam String name,
+                         @RequestParam String email,
+                         @RequestParam String birthdate,
+                         RedirectAttributes redirectAttributes) {
+        NewAccountDto newAccountDto = NewAccountDto.builder()
+                .login(login)
+                .password(password)
+                .confirmPassword(confirmPassword)
+                .name(name)
+                .email(email)
+                .birthdate(birthdate)
+                .build();
+
+        try {
+            log.info("Sending signup request to accounts service: {}", newAccountDto.getLogin());
+            AccountDto newAccount = accountsClient.register(newAccountDto);
+
+            if (!newAccount.getErrors().isEmpty()) {
+                redirectAttributes.addFlashAttribute("errors", newAccount.getErrors());
+                redirectAttributes.addFlashAttribute("login", login);
+                redirectAttributes.addFlashAttribute("name", name);
+                redirectAttributes.addFlashAttribute("email", email);
+                redirectAttributes.addFlashAttribute("birthdate", birthdate);
+                log.info("Ошибки параметров регистрации {}", newAccount.getErrors());
+                return "redirect:/signup";
+            } else {
+                return "redirect:/login";
+            }
+
+        } catch (FeignException e) {
+            log.error("Feign error during registration. Status: {}, Message: {}", e.status(), e.getMessage());
+            log.error("Feign request: {}", e.request());
+
+            if (e.status() == 403) {
+                redirectAttributes.addFlashAttribute("error",
+                        "Доступ запрещен. Проверьте CSRF настройки accounts сервиса.");
+            } else {
+                redirectAttributes.addFlashAttribute("error",
+                        "Ошибка связи с сервисом accounts: " + e.getMessage());
+            }
+        } catch (Exception e) {
+            log.error("Unexpected error during registration: ", e);
+            redirectAttributes.addFlashAttribute("error", "Неожиданная ошибка: " + e.getMessage());
+        }
+
+        return "redirect:/signup";
     }
 
     /*
@@ -127,8 +181,8 @@ public class FrontController {
                                  @RequestParam String password,
                                  @RequestParam String confirmPassword,
                                  RedirectAttributes redirectAttributes,
-                                 @AuthenticationPrincipal OidcUser principal) {
-        if (!login.equals(principal.getPreferredUsername())) {
+                                 @AuthenticationPrincipal UserDetails userDetails) {
+        if (!login.equals(userDetails.getUsername())) {
             redirectAttributes.addFlashAttribute("error", "Недостаточно прав для изменения пароля");
             return "redirect:/user/main";
         }
@@ -155,8 +209,8 @@ public class FrontController {
                                   @RequestParam String email,
                                   @RequestParam String birthdate,
                                   RedirectAttributes redirectAttributes,
-                                  @AuthenticationPrincipal OidcUser principal) {
-        if (!login.equals(principal.getPreferredUsername())) {
+                                  @AuthenticationPrincipal UserDetails userDetails) {
+        if (!login.equals(userDetails.getUsername())) {
             redirectAttributes.addFlashAttribute("error", "Недостаточно прав для изменения информации о пользователе");
             return "redirect:/user/main";
         }
@@ -178,11 +232,11 @@ public class FrontController {
      */
     @PostMapping("/user/{login}/cash")
     public String cashActions(@PathVariable String login,
-                                 @RequestParam Double amount,
-                                 @RequestParam String action,
-                                 RedirectAttributes redirectAttributes,
-                                 @AuthenticationPrincipal OidcUser principal) {
-        if (!login.equals(principal.getPreferredUsername())) {
+                              @RequestParam Double amount,
+                              @RequestParam String action,
+                              RedirectAttributes redirectAttributes,
+                              @AuthenticationPrincipal UserDetails userDetails) {
+        if (!login.equals(userDetails.getUsername())) {
             redirectAttributes.addFlashAttribute("error", "Недостаточно прав для выполнения операции");
             return "redirect:/user/main";
         }
@@ -204,8 +258,8 @@ public class FrontController {
                            @RequestParam Double amount,
                            @RequestParam String toLogin,
                            RedirectAttributes redirectAttributes,
-                           @AuthenticationPrincipal OidcUser principal) {
-        if (!login.equals(principal.getPreferredUsername())) {
+                           @AuthenticationPrincipal UserDetails userDetails) {
+        if (!login.equals(userDetails.getUsername())) {
             redirectAttributes.addFlashAttribute("error", "Недостаточно прав для выполнения перевода");
             return "redirect:/user/main";
         }
@@ -219,14 +273,14 @@ public class FrontController {
     }
 
     /*
-    DELETE "/user/{login}/delete" - удаление акканута пользователя из банковского приложения
+    POST "/user/{login}/delete" - удаление акканута пользователя из банковского приложения
     Возвращает: редирект на страницу выхода из приложения /logout
     */
-    @DeleteMapping("/user/{login}/delete")
+    @PostMapping("/user/{login}/delete")
     public String delete(@PathVariable String login,
                          RedirectAttributes redirectAttributes,
-                         @AuthenticationPrincipal OidcUser principal) {
-        if (!login.equals(principal.getPreferredUsername())) {
+                         @AuthenticationPrincipal UserDetails userDetails) {
+        if (!login.equals(userDetails.getUsername())) {
             redirectAttributes.addFlashAttribute("error", "Недостаточно прав для удаления аккаунта");
             return "redirect:/user/main";
         }

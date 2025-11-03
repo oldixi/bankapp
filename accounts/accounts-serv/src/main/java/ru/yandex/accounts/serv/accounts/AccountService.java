@@ -2,7 +2,9 @@ package ru.yandex.accounts.serv.accounts;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import ru.yandex.accounts.dto.AccountDto;
@@ -19,11 +21,19 @@ import java.util.stream.Stream;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class AccountService {
+public class AccountService /*implements UserDetailsService*/ {
     private final AccountRepository accountRepository;
     private final AccountMapper accountMapper;
     private final PasswordEncoder encoder;
     private final NotificationsClient notificationsClient;
+
+    //@Override
+    public AccountDto loadUserByUsername(String login) {
+/*        return accountMapper.toUserSecurityDto(accountRepository.findAccountByLoginIgnoreCase(login)
+                        .orElseThrow(() -> new UsernameNotFoundException("Пользователь не найден")));*/
+        return accountMapper.toDto(accountRepository.findAccountByLoginIgnoreCase(login)
+                .orElseThrow(() -> new UsernameNotFoundException("Пользователь не найден")));
+    }
 
     public AccountDto getAccount(String login) {
         AccountDto accountFromDb = accountMapper.toDto(accountRepository.findAccountByLoginIgnoreCase(login)
@@ -98,7 +108,9 @@ public class AccountService {
                 .toList();
         AccountDto user = accountMapper.toDto(data);
         if (errors.isEmpty()) {
-            user = accountMapper.toUserFrontDto(accountRepository.save(accountMapper.toEntity(data)));
+            user.setPassword(encoder.encode(user.getPassword()));
+            log.info("register user={}", user);
+            user = accountMapper.toUserFrontDto(accountRepository.save(accountMapper.toEntity(user)));
 
             try {
                 notificationsClient.sendNotification(data.getEmail(),
@@ -132,21 +144,24 @@ public class AccountService {
         return user;
     }
 
-    public AccountDto editUserInfo(String login, String name, String email, String birthdate) {
+    public AccountDto editUserInfo(String login, String name, String email, String birthdateStr) {
+        log.info("editUserInfo: login={}, name={}, email={}, birthdate={}", login, name, email, birthdateStr);
         AccountDto user = getAccount(login);
-        List<String> errors = Stream.of(checkNotNullParams(name, EUserAttributes.name),
-                        checkNotNullParams(email, EUserAttributes.email),
-                        checkNotNullParams(birthdate, EUserAttributes.birthdate),
-                        checkBirthdate18(birthdate))
+        log.info("editUserInfo: user={}", user);
+        List<String> errors = Stream.of((birthdateStr != null && !birthdateStr.isBlank()) ? checkBirthdate18(birthdateStr) : "")
                 .filter(err -> !err.isBlank())
                 .toList();
-        user.setName(name);
-        user.setEmail(email);
+        user.setName((name != null && !name.isBlank()) ? name : user.getName());
+        user.setEmail((email != null && !email.isBlank()) ? email : user.getEmail());
+        log.info("editUserInfo: setName and setEmail, user={}", user);
+        LocalDate birthdate = user.getBirthdate();
         if (errors.isEmpty()) {
-            user.setBirthdate(convertBirthdate(birthdate));
+            if (birthdateStr != null && !birthdateStr.isBlank()) birthdate = convertBirthdate(birthdateStr);
+            user.setBirthdate(birthdate);
+            log.info("editUserInfo: setBirthdate, user={}", user);
             user = accountMapper.toUserFrontDto(accountRepository.save(accountMapper.toEntity(user)));
             try {
-                notificationsClient.sendNotification(email,
+                notificationsClient.sendNotification(user.getEmail(),
                         "Информация о вашем аккаунте в банковском приложении успешно изменена");
             } catch (Exception e) {
                 log.warn("Failed to send notification: " + e.getMessage());
@@ -181,7 +196,7 @@ public class AccountService {
     }
 
     private String checkExistence(AccountDto account) {
-        if (account != null && account.getEmail() != null) return "Лицевой счет не существует";
+        if (account != null && account.getName() == null) return "Лицевой счет не существует";
         return "";
     }
 
@@ -199,7 +214,9 @@ public class AccountService {
     private LocalDate convertBirthdate(String birthdate) {
         try {
             return LocalDate.parse(birthdate);
-        } catch (Exception ignore) {}
+        } catch (Exception e) {
+            log.warn("convertBirthdate error: birthdate={}", birthdate);
+        }
         return null;
     }
 }

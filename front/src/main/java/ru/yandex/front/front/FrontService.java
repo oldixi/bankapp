@@ -1,11 +1,11 @@
 package ru.yandex.front.front;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
-import ru.yandex.accounts.dto.AccountDto;
-import ru.yandex.accounts.dto.AccountTransferDto;
-import ru.yandex.cash.cash.CashResponseDto;
-import ru.yandex.accounts.dto.NewAccountDto;
+import ru.yandex.accounts.dto.*;
 import ru.yandex.front.api.AccountsClient;
 import ru.yandex.front.api.CashClient;
 import ru.yandex.front.api.TransferClient;
@@ -13,13 +13,30 @@ import ru.yandex.front.api.TransferClient;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
-public class FrontService {
+@Slf4j
+public class FrontService implements UserDetailsService {
     private final AccountsClient accountsClient;
     private final CashClient cashClient;
     private final TransferClient transferClient;
+
+    @Override
+    public UserDetails loadUserByUsername(String login) {
+        log.info("loadUserByUsername {}", login);
+        try {
+            /*UserDetails*/ AccountDto user = accountsClient.loadUserByUsername(login);
+            log.info("loadUserByUsername login: user={}", user);
+
+            return toUserSecurityDto(user);
+            //return accountsClient.loadUserByUsername(login);
+        } catch (Exception e) {
+            log.warn("loadUserByUsername login {} error: {}", login, e.getMessage());
+            return NewAccountDto.builder().login(login).errors(Collections.singletonList(e.getMessage())).build();
+        }
+    }
 
     public AccountDto registerUser(String login,
                                    String password,
@@ -96,5 +113,24 @@ public class FrontService {
         } catch (Exception e) {
             return AccountDto.builder().login(login).errors(Collections.singletonList(e.getMessage())).build();
         }
+    }
+
+    private UserDetails toUserSecurityDto(AccountDto dto) {
+        log.info("toUserSecurityDto: dto={}", dto);
+        NewAccountDto user = NewAccountDto.builder()
+                .name(dto.getLogin())
+                .login(dto.getLogin())
+                .password(dto.getPassword())
+                .build();
+        user.setAuthorities(Stream.of(EUserRole.ROLE_USER.name())
+                .map(role -> {
+                    EUserRole roleStr = EUserRole.UNAUTHORIZED;
+                    try {
+                        roleStr = EUserRole.valueOf(role);
+                    } catch (Exception ignore) {}
+                    return new RoleDto(roleStr);
+                }).toList());
+        user.getAuthorities().forEach(auth -> log.info("Finish toUserDto: auth={}", auth.getAuthority()));
+        return user;
     }
 }

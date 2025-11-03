@@ -9,10 +9,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 @FeignClient(name = "notifications", configuration = OAuth2FeignConfiguration.class)
 public interface NotificationsClient {
-    @PostMapping("/api/notifications/{email}/mail")
+    @PostMapping("/api/notifications/{email}/email")
     @CircuitBreaker(name = "notificationsService", fallbackMethod = "sendNotificationFallback")
     @Retry(name = "notificationsService", fallbackMethod = "sendNotificationFallback")
-    void sendNotification(@PathVariable String email, @RequestParam String text);
+    void sendNotification(@PathVariable String email, @RequestParam String message);
 
-    default void sendNotificationFallback(@PathVariable String email, @RequestParam String text) {}
+    default void sendNotificationFallback(@RequestParam String email, @RequestParam String message, Throwable throwable) {
+        System.err.println("Fallback triggered for email: " + email + ", Error: " + throwable.getMessage());
+    }
 }

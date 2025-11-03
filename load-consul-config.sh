@@ -2,16 +2,18 @@
 consul kv put config/apps/logging.level.root "info"
 consul kv put config/apps/logging.level.org.springframework.cloud.consul "info"
 
-consul kv put config/apps/spring.security.oauth2.client.provider.keycloak.issuer-uri "http://127.0.0.1:8080/realms/bankapp"
+consul kv put config/apps/spring.security.oauth2.client.provider.keycloak.issuer-uri "http://localhost:8080/realms/bankapp"
 consul kv put config/apps/spring.security.oauth2.client.registration.keycloak.provider "keycloak"
 consul kv put config/apps/spring.security.oauth2.client.registration.keycloak.authorization-grant-type "client_credentials"
 consul kv put config/apps/spring.security.oauth2.client.registration.keycloak.scope "openid,profile,email"
-consul kv put config/apps/spring.security.oauth2.client.registration.keycloak.clientAuthenticationMethod "client_secret_post"
+consul kv put config/apps/spring.security.oauth2.client.registration.keycloak.clientAuthenticationMethod "client_secret_basic"
+consul kv put config/apps/spring.security.oauth2.client.registration.keycloak.issuer-uri "http://localhost:8080/realms/bankapp"
 
-consul kv put config/apps/spring.security.oauth2.resourceserver.jwt.issuer-uri "http://127.0.0.1:8080/realms/bankapp"
-consul kv put config/apps/spring.security.oauth2.resourceserver.jwt.jwk-set-uri "http://127.0.0.1:8080/realms/bankapp/protocol/openid-connect/certs"
+consul kv put config/apps/spring.security.oauth2.resourceserver.jwt.issuer-uri "http://localhost:8080/realms/bankapp"
+consul kv put config/apps/spring.security.oauth2.resourceserver.jwt.jwk-set-uri "http://localhost:8080/realms/bankapp/protocol/openid-connect/certs"
 consul kv put config/apps/client.registration.id "keycloak"
 
+consul kv put config/apps/feign.circuitbreaker.enabled "true"
 
 # accounts
 consul kv put config/accounts/server.port "8082"
@@ -30,62 +32,72 @@ consul kv put config/accounts/spring.security.oauth2.client.registration.keycloa
 consul kv put config/accounts/spring.security.oauth2.client.registration.keycloak.client-secret "vRBqHqy5rIgQjqHLk4ntrFMflfZZ1V5Y"
 
 consul kv put config/accounts/resilience4j.circuitbreaker.instances.notificationsService.register-health-indicator "true" 
-consul kv put config/accounts/resilience4j.circuitbreaker.instances.notificationsService.failure-rate-threshold "50"   
-consul kv put config/apps/feign.circuitbreaker.enabled "true"
+consul kv put config/accounts/resilience4j.circuitbreaker.instances.notificationsService.failure-rate-threshold "50"
+
 
 # cash
 consul kv put config/cash/server.port "8083" 
-consul kv put config/cash/spring.application.name "cash" 
-consul kv put config/cash/spring.profiles.active "dev" 
+consul kv put config/cash/spring.application.name "cash"
 
 consul kv put config/cash/spring.security.oauth2.client.registration.keycloak.client-id "cash"
 consul kv put config/cash/spring.security.oauth2.client.registration.keycloak.client-secret "VKgaEyKXFsc5QJJrtDolB2Luv7KyeXth"
 
+consul kv put config/cash/resilience4j.circuitbreaker.instances.accountsService.register-health-indicator "true"
+consul kv put config/cash/resilience4j.circuitbreaker.instances.accountsService.failure-rate-threshold "50"
+
 
 # transfer
 consul kv put config/transfer/server.port "8084" 
-consul kv put config/transfer/spring.application.name "transfer" 
-consul kv put config/transfer/spring.profiles.active "dev" 
+consul kv put config/transfer/spring.application.name "transfer"
 
 consul kv put config/transfer/spring.security.oauth2.client.registration.keycloak.client-id "transfer"
 consul kv put config/transfer/spring.security.oauth2.client.registration.keycloak.client-secret "tFVIAzOu86RAkgbIzmZgEkeCoOYk74w1"
 
+consul kv put config/transfer/resilience4j.circuitbreaker.instances.accountsService.register-health-indicator "true"
+consul kv put config/transfer/resilience4j.circuitbreaker.instances.accountsService.failure-rate-threshold "50"
+
 
 # notifications
 consul kv put config/notifications/server.port "8085" 
-consul kv put config/notifications/spring.application.name "notifications" 
-consul kv put config/notifications/spring.profiles.active "dev" 
+consul kv put config/notifications/spring.application.name "notifications"
 
 consul kv put config/notifications/spring.security.oauth2.client.registration.keycloak.client-id "notifications"
 consul kv put config/notifications/spring.security.oauth2.client.registration.keycloak.client-secret "zwNU03EpVjSvqo7UpsJdghw6v0EVe0hC"
 
-consul kv put config/notifications/spring.mail.host "smtp.yandex.ru" 
-consul kv put config/notifications/spring.mail.port "465" 
-consul kv put config/notifications/spring.mail.port "smtps"
-consul kv put config/notifications/spring.mail.username "app.oldixi" 
-consul kv put config/notifications/spring.mail.password "mrxiygnegqjcsour" 
-consul kv put config/notifications/spring.mail.properties.mail.smtp.auth "true" 
-consul kv put config/notifications/spring.mail.properties.mail.smtp.starttls.enable "true" 
-consul kv put config/notifications/spring.mail.properties.mail.smtp.starttls.required "true"
+consul kv put config/notifications/spring.mail.host "smtp.yandex.ru"
+consul kv put config/notifications/spring.mail.port "465"
+consul kv put config/notifications/spring.mail.protocol "smtps"
+consul kv put config/notifications/spring.mail.username "app.oldixi@yandex.ru"
+consul kv put config/notifications/spring.mail.password "irwlzrzewdogocpw"
+consul kv put config/notifications/spring.mail.properties.mail.smtp.auth "true"
+consul kv put config/notifications/spring.mail.properties.mail.smtp.ssl.enable "true"
+consul kv put config/notifications/spring.mail.properties.mail.smtp.starttls.enable "false"
+consul kv put config/notifications/spring.mail.properties.mail.smtp.socketFactory.port "465"
+consul kv put config/notifications/spring.mail.properties.mail.smtp.socketFactory.class "javax.net.ssl.SSLSocketFactory"
+consul kv put config/notifications/spring.mail.properties.mail.smtp.socketFactory.fallback "false"
+
 
 # front
 consul kv put config/front/server.port "8086" 
-consul kv put config/front/spring.application.name "front" 
-consul kv put config/front/spring.profiles.active "dev" 
+consul kv put config/front/spring.application.name "front"
 
 consul kv put config/front/spring.security.oauth2.client.registration.keycloak.client-id "front"
 consul kv put config/front/spring.security.oauth2.client.registration.keycloak.client-secret "moY8OTX4GbDI5AwmholMgAXT0aJDCSpf"
 
 consul kv put config/front/resilience4j.circuitbreaker.instances.accountsService.register-health-indicator "true" 
-consul kv put config/front/resilience4j.circuitbreaker.instances.accountsService.failure-rate-threshold "50" 
+consul kv put config/front/resilience4j.circuitbreaker.instances.accountsService.failure-rate-threshold "50"
 
-consul kv put config/front/resilience4j.circuitbreaker.instances.cashService.register-health-indicator "true" 
-consul kv put config/front/resilience4j.circuitbreaker.instances.cashService.failure-rate-threshold "50" 
+consul kv put config/front/resilience4j.circuitbreaker.instances.cashService.register-health-indicator "true"
+consul kv put config/front/resilience4j.circuitbreaker.instances.cashService.failure-rate-threshold "50"
 
-consul kv put config/front/resilience4j.circuitbreaker.instances.transferService.register-health-indicator "true" 
+consul kv put config/front/resilience4j.circuitbreaker.instances.transferService.register-health-indicator "true"
 consul kv put config/front/resilience4j.circuitbreaker.instances.transferService.failure-rate-threshold "50"
-consul kv put config/apps/feign.circuitbreaker.enabled "true"
 
-# test_config
-consul kv put config/apps_test/logging.level.root "debug"
-consul kv put config/apps_test/spring.jpa.show-sql "true"
+
+# gateway
+consul kv put config/gateway/server.port "8087"
+consul kv put config/gateway/spring.application.name "gateway"
+consul kv put config/gateway/spring.cloud.gatewa.discovery.locator.enabled "true"
+
+consul kv put config/gateway/spring.security.oauth2.client.registration.keycloak.client-id "gateway"
+consul kv put config/gateway/spring.security.oauth2.client.registration.keycloak.client-secret "sX48hILCYvgMy1f7Cql6RVw5TA4Xpxzh"

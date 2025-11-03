@@ -1,0 +1,13 @@
+spring:
+  main:
+    web-application-type: servlet
+  cloud:
+    discovery:
+      enabled: false
+
+server:
+  port: 8083
+
+logging:
+  level:
+    org.springframework.cloud.contract: debug

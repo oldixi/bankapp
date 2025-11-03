@@ -1,10 +1,48 @@
+import org.springframework.cloud.contract.verifier.config.TestFramework
+
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.5.5' apply false
+	id 'io.spring.dependency-management' version '1.1.7' apply false
+	id 'org.springframework.cloud.contract' version '4.1.2' apply false
+}
+
+allprojects {
+	repositories {
+		mavenCentral()
+	}
+
+	java {
+		toolchain {
+			languageVersion = JavaLanguageVersion.of(21)
+		}
+	}
+}
+
 subprojects {
 	apply plugin: 'java'
-	//apply plugin: 'org.springframework.boot' version '3.3.4'
-	//apply plugin: 'io.spring.dependency-management'
+	apply plugin: 'org.springframework.boot'
+	apply plugin: 'io.spring.dependency-management'
+
+	bootJar {
+		enabled = true
+	}
+
+	jar {
+		enabled = true
+	}
+
+	ext {
+		set('springCloudVersion', "2025.0.0")
+	}
+
+	dependencyManagement {
+		imports {
+			mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+		}
+	}
 
 	dependencies {
-		implementation 'org.springframework.boot:spring-boot-starter-web'
 		implementation 'org.springframework.boot:spring-boot-starter-actuator'
 		implementation 'org.springframework.cloud:spring-cloud-starter-consul-discovery'
 		implementation 'org.springframework.cloud:spring-cloud-starter-consul-config'
@@ -21,33 +59,174 @@ subprojects {
 		annotationProcessor 'org.projectlombok:lombok'
 
 		if (project.name == 'front') {
-			implementation 'org.springframework.cloud:spring-cloud-starter-gateway'
+			implementation 'org.springframework.boot:spring-boot-starter-web'
 			implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
-		}
-
-		if (project.name == 'accounts') {
-			implementation 'org.liquibase:liquibase-core'
-			implementation 'org.postgresql:postgresql'
-			implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-			runtimeOnly 'org.postgresql:postgresql'
+			testImplementation 'org.springframework.cloud:spring-cloud-starter-contract-stub-runner'
 			implementation project(':accounts:accounts-dto')
 		}
 
+		if (project.name == 'gateway') {
+			implementation 'org.springframework.cloud:spring-cloud-starter-gateway-server-webflux'
+			implementation 'org.springframework.boot:spring-boot-starter-webflux'
+		}
+
+		if (project.name == 'account-serv') {
+			implementation 'org.springframework.boot:spring-boot-starter-web'
+			implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+			implementation 'jakarta.servlet:jakarta.servlet-api:6.0.0'
+			implementation 'org.liquibase:liquibase-core'
+			implementation 'org.postgresql:postgresql'
+			runtimeOnly 'org.postgresql:postgresql'
+			implementation project(':accounts:accounts-dto')
+			testImplementation 'org.springframework.cloud:spring-cloud-starter-contract-stub-runner'
+			testImplementation 'org.springframework.cloud:spring-cloud-starter-contract-verifier'
+		}
+
+		if (project.name == 'accounts:account-serv') {
+			implementation 'org.springframework.boot:spring-boot-starter-web'
+			implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+			implementation 'jakarta.servlet:jakarta.servlet-api:6.0.0'
+			implementation 'org.liquibase:liquibase-core'
+			implementation 'org.postgresql:postgresql'
+			runtimeOnly 'org.postgresql:postgresql'
+			implementation project(':accounts:accounts-dto')
+			testImplementation 'org.springframework.cloud:spring-cloud-starter-contract-stub-runner'
+			testImplementation 'org.springframework.cloud:spring-cloud-starter-contract-verifier'
+		}
+
+		if (project.name == 'accounts') {
+			implementation 'org.springframework.boot:spring-boot-starter-web'
+			implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+			implementation 'jakarta.servlet:jakarta.servlet-api:6.0.0'
+			implementation 'org.liquibase:liquibase-core'
+			implementation 'org.postgresql:postgresql'
+			runtimeOnly 'org.postgresql:postgresql'
+			implementation project(':accounts:accounts-dto')
+			testImplementation 'org.springframework.cloud:spring-cloud-starter-contract-stub-runner'
+			testImplementation 'org.springframework.cloud:spring-cloud-starter-contract-verifier'
+		}
+
 		if (project.name == 'notifications') {
+			implementation 'org.springframework.boot:spring-boot-starter-web'
 			implementation 'org.springframework.boot:spring-boot-starter-mail'
+			testImplementation 'org.springframework.cloud:spring-cloud-starter-contract-verifier'
+		}
+
+		if (project.name == 'cash') {
+			implementation project(':accounts:accounts-dto')
+			implementation 'org.springframework.boot:spring-boot-starter-web'
+			testImplementation 'org.springframework.cloud:spring-cloud-starter-contract-stub-runner'
+			testImplementation 'org.springframework.cloud:spring-cloud-starter-contract-verifier'
+		}
+
+		if (project.name == 'transfer') {
+			implementation project(':accounts:accounts-dto')
+			implementation 'org.springframework.boot:spring-boot-starter-web'
+			testImplementation 'org.springframework.cloud:spring-cloud-starter-contract-stub-runner'
+			testImplementation 'org.springframework.cloud:spring-cloud-starter-contract-verifier'
 		}
 
 		testImplementation 'org.springframework.boot:spring-boot-starter-test'
 		testImplementation 'org.springframework.security:spring-security-test'
+		testImplementation 'org.mockito:mockito-core'
+		testImplementation 'org.mockito:mockito-junit-jupiter'
 	}
-
-/*	dependencyManagement {
-		imports {
-			mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
-		}
-	}*/
 
 	test {
 		useJUnitPlatform()
+		testLogging {
+			events "passed", "skipped", "failed"
+		}
+	}
+
+	if (project.name == 'cash') {
+		group = 'ru.yandex.cash'
+		version = '0.0.1-SNAPSHOT'
+		bootJar {
+			mainClass = 'ru.yandex.cash.CashApplication'
+		}
+	}
+
+	if (project.name == 'transfer') {
+		group = 'ru.yandex.transfer'
+		version = '0.0.1-SNAPSHOT'
+	}
+
+	if (project.name == 'notifications') {
+		group = 'ru.yandex.notifications'
+		version = '0.0.1-SNAPSHOT'
+	}
+
+	if (project.name == 'front') {
+		group = 'ru.yandex.front'
+		version = '0.0.1-SNAPSHOT'
+	}
+
+	if (project.name == 'gateway') {
+		group = 'ru.yandex.gateway'
+		version = '0.0.1-SNAPSHOT'
+	}
+
+	if (project.name == 'account-serv') {
+		group = 'ru.yandex.account.serv'
+		version = '0.0.1-SNAPSHOT'
+	}
+
+	if (project.name == 'account-dto') {
+		group = 'ru.yandex.account.dto'
+		version = '0.0.1-SNAPSHOT'
+	}
+}
+
+def contractServicesConfig = [
+		'cash': [
+				baseClass: 'ru.yandex.cash.contract.CashBaseTest',
+				package: 'ru.yandex.cash.contract'
+		],
+		'notifications': [
+				baseClass: 'ru.yandex.notifications.contract.NotificationsBaseTest',
+				package: 'ru.yandex.notifications.contract'
+		],
+		'accounts-serv': [
+				baseClass: 'ru.yandex.accounts.serv.contract.AccountsBaseTest',
+				package: 'ru.yandex.accounts.serv.contract'
+		],
+		'transfer': [
+				baseClass: 'ru.yandex.transfer.contract.TransferBaseTest',
+				package: 'ru.yandex.transfer.contract'
+		]
+]
+
+configure(subprojects.findAll { it.name in contractServicesConfig.keySet() }) {
+	apply plugin: 'org.springframework.cloud.contract'
+
+	contracts {
+		testFramework = TestFramework.JUNIT5
+
+		def config = contractServicesConfig[project.name]
+		packageWithBaseClasses = config.package
+		baseClassMappings {
+			baseClassMapping(".*", config.baseClass)
+		}
+
+		contractsDslDir = file("src/test/resources/contracts")
+	}
+}
+
+tasks.register('collectAllStubs', Copy) {
+	from subprojects.collect { project ->
+		if (project.name in contractServicesConfig.keySet()) {
+			return "${project.projectDir}/build/stubs"
+		}
+		return []
+	}
+	into "${rootProject.projectDir}/stubs-repo"
+}
+
+subprojects { project ->
+	if (project.name in contractServicesConfig.keySet()) {
+		project.tasks.named('test') {
+			finalizedBy collectAllStubs
+		}
 	}
 }

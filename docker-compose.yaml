@@ -48,10 +48,19 @@ services:
       - KC_BOOTSTRAP_ADMIN_PASSWORD=admin
       - KEYCLOAK_IMPORT=./realm-export.json
 
+  gateway:
+    build: ./gateway
+    ports:
+      - "8087:8087"
+    environment:
+      SPRING_CLOUD_CONSUL_HOST: consul
+      SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUER-URI: http://keycloak:8081/realms/bankapp
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER-URI: http://keycloak:8081
+    depends_on:
+      - consul
+
   front:
     build: ./front
-    ports:
-      - "8086:8086"
     environment:
       SPRING_CLOUD_CONSUL_HOST: consul
       SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUER-URI: http://keycloak:8081/realms/bankapp
@@ -62,8 +71,6 @@ services:
 
   accounts:
     build: ./accounts
-    ports:
-      - "8082:8082"
     environment:
       SPRING_CLOUD_CONSUL_HOST: consul
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/bankapp
@@ -76,8 +83,6 @@ services:
 
   cash:
     build: ./cash
-    ports:
-      - "8083:8083"
     environment:
       SPRING_CLOUD_CONSUL_HOST: consul
       SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUER-URI: http://keycloak:8081/realms/bankapp
@@ -87,8 +92,6 @@ services:
 
   transfer:
     build: ./transfer
-    ports:
-      - "8084:8084"
     environment:
       SPRING_CLOUD_CONSUL_HOST: consul
       SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUER-URI: http://keycloak:8081/realms/bankapp
@@ -98,8 +101,6 @@ services:
 
   notifications:
     build: ./notifications
-    ports:
-      - "8085:8085"
     environment:
       SPRING_CLOUD_CONSUL_HOST: consul
       SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUER-URI: http://keycloak:8081/realms/bankapp

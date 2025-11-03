@@ -10,7 +10,7 @@ import ru.yandex.accounts.dto.AccountDto;
 public class CashController {
     private final CashService cashService;
 
-    @PostMapping("/{login}")
+    @PostMapping("/{login}/cash")
     public AccountDto actionWithBalance(@PathVariable String login, @RequestParam Double amount, @RequestParam String action) {
         return cashService.actionWithBalance(login, amount, EAction.valueOf(action));
     }

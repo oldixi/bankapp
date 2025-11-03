@@ -11,7 +11,7 @@ import ru.yandex.accounts.dto.AccountDto;
 @FeignClient(name = "cash", configuration = OAuth2FeignConfiguration.class)
 public interface CashClient {
 
-    @PostMapping("/api/cash/{login}")
+    @PostMapping("/api/cash/{login}/cash")
     @CircuitBreaker(name = "cashService", fallbackMethod = "depositFallback")
     @Retry(name = "cashService", fallbackMethod = "depositFallback")
     AccountDto actionWithBalance(@PathVariable String login, @RequestParam Double amount, @RequestParam String action);

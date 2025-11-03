@@ -13,8 +13,8 @@ public interface AccountsClient {
     @GetMapping("/api/accounts/{login}")
     AccountDto getAccount(@PathVariable String login);
 
-    @PutMapping("/api/accounts/{login}/balance")
-    AccountDto updateBalance(@PathVariable String login, @RequestBody Double balance);
+    @PostMapping("/api/accounts/{login}/balance")
+    AccountDto updateBalance(@PathVariable String login, @RequestParam Double balance);
 
     default AccountDto getAccountFallback(String login, Throwable t) {
         throw new ServiceUnavailableException("Сервис аккаунтов временно недоступен. Невозможно получить данные.");

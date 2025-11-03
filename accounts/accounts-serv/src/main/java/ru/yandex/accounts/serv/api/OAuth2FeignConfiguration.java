@@ -1,6 +1,6 @@
 package ru.yandex.accounts.serv.api;
 
-import feign.RequestInterceptor;
+import org.springframework.cloud.openfeign.security.OAuth2AccessTokenInterceptor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
@@ -13,11 +13,15 @@ import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepo
 @Configuration
 public class OAuth2FeignConfiguration {
     @Bean
-    public OAuth2AuthorizedClientManager authorizedClientManager(
-            ClientRegistrationRepository clientRegistrationRepository,
-            OAuth2AuthorizedClientRepository authorizedClientRepository) {
+    public OAuth2AccessTokenInterceptor oauth2AccessTokenInterceptor(OAuth2AuthorizedClientManager authorizedClientManager) {
+        return new OAuth2AccessTokenInterceptor("keycloak", authorizedClientManager);
+    }
 
-        OAuth2AuthorizedClientProvider authorizedClientProvider = OAuth2AuthorizedClientProviderBuilder.builder()
+    @Bean
+    public OAuth2AuthorizedClientManager authorizedClientManager(ClientRegistrationRepository clientRegistrationRepository,
+            OAuth2AuthorizedClientRepository authorizedClientRepository) {
+        OAuth2AuthorizedClientProvider authorizedClientProvider =
+                OAuth2AuthorizedClientProviderBuilder.builder()
                         .clientCredentials()
                         .build();
 
@@ -26,10 +30,5 @@ public class OAuth2FeignConfiguration {
         authorizedClientManager.setAuthorizedClientProvider(authorizedClientProvider);
 
         return authorizedClientManager;
-    }
-
-    @Bean
-    public RequestInterceptor oauth2FeignRequestInterceptor(OAuth2AuthorizedClientManager authorizedClientManager) {
-        return new OAuth2FeignRequestInterceptor(authorizedClientManager);
     }
 }

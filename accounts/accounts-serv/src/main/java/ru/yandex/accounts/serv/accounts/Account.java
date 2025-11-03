@@ -26,7 +26,7 @@ public class Account {
     @Email
     @NotBlank
     private String email;
-    @NotBlank
     private LocalDate birthdate;
-    private Double balance;
+    @Column(columnDefinition = "double precision default 0.0")
+    private Double balance = 0.0;
 }

@@ -1,0 +1,17 @@
+spring:
+  cloud:
+    discovery:
+      enabled: false
+    loadbalancer:
+      enabled: false
+
+feign:
+  circuitbreaker:
+    enabled: false
+
+logging:
+  level:
+    ru.yandex.front.feign.CashClient: debug
+    ru.yandex.front.feign.AccountsClient: debug
+    ru.yandex.front.feign.TransferClient: debug
+    org.springframework.cloud.contract: debug

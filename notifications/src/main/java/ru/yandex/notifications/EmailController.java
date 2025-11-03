@@ -7,13 +7,14 @@ import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/notifications/")
+@RequestMapping("/api/notifications")
 @AllArgsConstructor
 public class EmailController {
     private final EmailNotificationService emailNotificationService;
 
     @PostMapping(value = "/{email}/email")
     public void sendSimpleEmail(@PathVariable String email, @RequestParam String message) {
+        log.info("sendSimpleEmail: email={}", email);
         try {
             emailNotificationService.sendSimpleEmail(email, "BANKAPP", message);
         } catch (MailException mailException) {

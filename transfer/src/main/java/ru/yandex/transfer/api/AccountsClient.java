@@ -3,10 +3,7 @@ package ru.yandex.transfer.api;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 import ru.yandex.accounts.dto.AccountDto;
 
 @FeignClient(name = "accounts", configuration = OAuth2FeignConfiguration.class)
@@ -16,8 +13,8 @@ public interface AccountsClient {
     @GetMapping("/api/accounts/{login}")
     AccountDto getAccount(@PathVariable String login);
 
-    @PutMapping("/api/accounts/{login}/balance")
-    AccountDto updateBalance(@PathVariable String login, @RequestBody Double balance);
+    @PostMapping("/api/accounts/{login}/balance")
+    AccountDto updateBalance(@PathVariable String login, @RequestParam Double balance);
 
     default AccountDto getAccountFallback(String login, Throwable t) {
         throw new ServiceUnavailableException("Сервис аккаунтов временно недоступен. Невозможно получить данные.");

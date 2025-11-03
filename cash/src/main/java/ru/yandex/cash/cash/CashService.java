@@ -1,6 +1,7 @@
 package ru.yandex.cash.cash;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.accounts.dto.AccountDto;
 import ru.yandex.cash.api.AccountsClient;
@@ -9,10 +10,12 @@ import java.util.Collections;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class CashService {
     private final AccountsClient accountsClient;
 
     public AccountDto actionWithBalance(String userLogin, Double amount, EAction action) {
+        log.info("actionWithBalance: userLogin={}, amount={}, action={}", userLogin, amount, action);
         AccountDto account = getAccount(userLogin);
         CashResponseDto response;
         switch(action) {

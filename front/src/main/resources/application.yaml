@@ -18,7 +18,16 @@ spring:
 
 logging:
   level:
-    org.springframework.boot.context.config: info
-    org.springframework.cloud.consul: info
-    org.springframework.cloud.bootstrap: info
-    com.ecwid.consul: info
+    org.springframework.boot.context.config: debug
+    org.springframework.cloud.consul: debug
+    org.springframework.cloud.bootstrap: debug
+    com.ecwid.consul: debug
+    ru.yandex.front.feign.CashClient: debug
+    ru.yandex.front.feign.AccountsClient: trace
+    ru.yandex.front.feign.TransferClient: debug
+
+    org.springframework.security: trace
+    org.springframework.web: DEBUG
+    org.springframework.web.cors: trace
+    ru.yandex.accounts.accounts-serv: TRACE
+    feign: DEBUG

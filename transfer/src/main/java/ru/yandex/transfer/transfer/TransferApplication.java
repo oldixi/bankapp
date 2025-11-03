@@ -8,7 +8,7 @@ import ru.yandex.transfer.api.AccountsClient;
 
 @SpringBootApplication
 @EnableDiscoveryClient
-@EnableFeignClients(clients = {AccountsClient.class})
+@EnableFeignClients(basePackages = "ru.yandex.transfer.api", clients = {AccountsClient.class})
 public class TransferApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(TransferApplication.class, args);

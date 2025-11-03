@@ -7,13 +7,16 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.accounts.dto.AccountDto;
 import ru.yandex.accounts.dto.AccountTransferDto;
 import ru.yandex.accounts.dto.NewAccountDto;
-import ru.yandex.accounts.serv.accounts.Account;
 
 import java.util.Collections;
 import java.util.List;
 
 @FeignClient(name = "accounts", configuration = OAuth2FeignConfiguration.class)
 public interface AccountsClient {
+    @GetMapping("/api/accounts/{login}/login")
+    @CircuitBreaker(name = "accountsService", fallbackMethod = "loadUserByUsernameFallback")
+    @Retry(name = "accountsService", fallbackMethod = "loadUserByUsernameFallback")
+    AccountDto /*UserDetails*/ loadUserByUsername(@PathVariable String login);
 
     @PostMapping("/api/accounts/signup")
     @CircuitBreaker(name = "accountsService", fallbackMethod = "registerFallback")
@@ -33,16 +36,16 @@ public interface AccountsClient {
                                      @RequestParam String confirmPassword);
 
     @PostMapping("/api/accounts/{login}/edit")
-    @CircuitBreaker(name = "accountsService", fallbackMethod = "updateProfileFallback")
-    @Retry(name = "accountsService", fallbackMethod = "updateProfileFallback")
+    @CircuitBreaker(name = "accountsService", fallbackMethod = "updateAccountFallback")
+    @Retry(name = "accountsService", fallbackMethod = "updateAccountFallback")
     AccountDto updateAccount(@PathVariable String login,
                              @RequestParam String name,
                              @RequestParam String email,
                              @RequestParam String birthdate);
 
-    @DeleteMapping("/api/accounts/{login}")
-    @CircuitBreaker(name = "accountsService", fallbackMethod = "updatePasswordFallback")
-    @Retry(name = "accountsService", fallbackMethod = "updatePasswordFallback")
+    @PostMapping("/api/accounts/{login}/delete")
+    @CircuitBreaker(name = "accountsService", fallbackMethod = "deleteFallback")
+    @Retry(name = "accountsService", fallbackMethod = "deleteFallback")
     AccountDto deleteAccount(@PathVariable String login);
 
     @GetMapping("/api/accounts/{login}/transfer")
@@ -50,23 +53,31 @@ public interface AccountsClient {
     @Retry(name = "accountsService", fallbackMethod = "getAccountFallback")
     List<AccountTransferDto> getAccounts(@PathVariable String login);
 
-    default Account registerFallback(NewAccountDto newAccount, Throwable t) {
+    default AccountDto loadUserByUsernameFallback(NewAccountDto newAccount, Throwable t) {
+        throw new ServiceUnavailableException("Сервис аккаунтов временно недоступен. Вход в приложение невозможен.");
+    }
+
+    default AccountDto registerFallback(NewAccountDto newAccount, Throwable t) {
         throw new ServiceUnavailableException("Сервис аккаунтов временно недоступен. Регистрация невозможна.");
     }
 
-    default Account getAccountFallback(String login, Throwable t) {
+    default AccountDto getAccountFallback(String login, Throwable t) {
         throw new ServiceUnavailableException("Сервис аккаунтов временно недоступен. Невозможно получить данные.");
     }
 
-    default void updatePasswordFallback(String login, String password, String confirmPassword, Throwable t) {
+    default AccountDto updatePasswordFallback(String login, String password, String confirmPassword, Throwable t) {
         throw new ServiceUnavailableException("Сервис аккаунтов временно недоступен. Невозможно изменить пароль.");
     }
 
-    default Account updateProfileFallback(String login, String name, String email, String birthdate, Throwable t) {
+    default AccountDto updateAccountFallback(String login, String name, String email, String birthdate, Throwable t) {
         throw new ServiceUnavailableException("Сервис аккаунтов временно недоступен. Невозможно обновить профиль.");
     }
 
-    default List<Account> getAccountsFallback(String login, Throwable t) {
+    default AccountDto deleteFallback(NewAccountDto newAccount, Throwable t) {
+        throw new ServiceUnavailableException("Сервис аккаунтов временно недоступен. Удаление аккаунта невозможно.");
+    }
+
+    default List<AccountTransferDto> getAccountsFallback(String login, Throwable t) {
         return Collections.emptyList();
     }
 }
