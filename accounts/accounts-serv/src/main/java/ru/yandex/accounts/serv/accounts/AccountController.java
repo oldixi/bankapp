@@ -3,7 +3,6 @@ package ru.yandex.accounts.serv.accounts;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.accounts.dto.AccountDto;
 import ru.yandex.accounts.dto.AccountTransferDto;
@@ -18,7 +17,7 @@ public class AccountController {
     private final AccountService accountService;
 
     @GetMapping("/{login}/login")
-    public ResponseEntity</*UserDetails*/AccountDto> loadUserByUsername(@PathVariable String login) {
+    public ResponseEntity<AccountDto> loadUserByUsername(@PathVariable String login) {
         return ResponseEntity.ok(accountService.loadUserByUsername(login));
     }
 

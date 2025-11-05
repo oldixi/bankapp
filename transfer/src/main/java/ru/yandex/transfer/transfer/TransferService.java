@@ -47,7 +47,10 @@ public class TransferService {
         try {
             return accountsClient.getAccount(userLogin);
         } catch (Exception e) {
-            return AccountDto.builder().login(userLogin).errors(Collections.singletonList(e.getMessage())).build();
+            return AccountDto.builder()
+                    .login(userLogin)
+                    .errors(Collections.singletonList("Сервис лицевых счетов временно недоступен: " + e.getMessage()))
+                    .build();
         }
     }
 
@@ -55,7 +58,10 @@ public class TransferService {
         try {
             return accountsClient.updateBalance(userLogin, balance);
         } catch (Exception e) {
-            return AccountDto.builder().login(userLogin).errors(Collections.singletonList(e.getMessage())).build();
+            return AccountDto.builder()
+                    .login(userLogin)
+                    .errors(Collections.singletonList("Сервис лицевых счетов временно недоступен: " + e.getMessage()))
+                    .build();
         }
     }
 }

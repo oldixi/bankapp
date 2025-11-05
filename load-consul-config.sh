@@ -2,18 +2,22 @@
 consul kv put config/apps/logging.level.root "info"
 consul kv put config/apps/logging.level.org.springframework.cloud.consul "info"
 
-consul kv put config/apps/spring.security.oauth2.client.provider.keycloak.issuer-uri "http://localhost:8080/realms/bankapp"
+consul kv put config/apps/feign.circuitbreaker.enabled "true"
+consul kv put config/apps/feign.config.default.retryer "feign.Retryer.Default"
+
+consul kv put config/apps/spring.security.oauth2.client.provider.keycloak.issuer-uri "http://localhost:8080/realms/master"
 consul kv put config/apps/spring.security.oauth2.client.registration.keycloak.provider "keycloak"
 consul kv put config/apps/spring.security.oauth2.client.registration.keycloak.authorization-grant-type "client_credentials"
 consul kv put config/apps/spring.security.oauth2.client.registration.keycloak.scope "openid,profile,email"
 consul kv put config/apps/spring.security.oauth2.client.registration.keycloak.clientAuthenticationMethod "client_secret_basic"
-consul kv put config/apps/spring.security.oauth2.client.registration.keycloak.issuer-uri "http://localhost:8080/realms/bankapp"
+consul kv put config/apps/spring.security.oauth2.client.registration.keycloak.issuer-uri "http://localhost:8080/realms/master"
 
-consul kv put config/apps/spring.security.oauth2.resourceserver.jwt.issuer-uri "http://localhost:8080/realms/bankapp"
-consul kv put config/apps/spring.security.oauth2.resourceserver.jwt.jwk-set-uri "http://localhost:8080/realms/bankapp/protocol/openid-connect/certs"
+consul kv put config/apps/spring.security.oauth2.resourceserver.jwt.issuer-uri "http://localhost:8080/realms/master"
+consul kv put config/apps/spring.security.oauth2.resourceserver.jwt.jwk-set-uri "http://localhost:8080/realms/master/protocol/openid-connect/certs"
 consul kv put config/apps/client.registration.id "keycloak"
 
-consul kv put config/apps/feign.circuitbreaker.enabled "true"
+consul kv put config/apps/spring.cloud.openfeign.oauth2.enabled "true"
+consul kv put config/apps/spring.cloud.openfeign.oauth2.clientRegistrationId "keycloak"
 
 # accounts
 consul kv put config/accounts/server.port "8082"
@@ -31,8 +35,12 @@ consul kv put config/accounts/spring.liquibase.password "bankapp"
 consul kv put config/accounts/spring.security.oauth2.client.registration.keycloak.client-id "accounts"
 consul kv put config/accounts/spring.security.oauth2.client.registration.keycloak.client-secret "vRBqHqy5rIgQjqHLk4ntrFMflfZZ1V5Y"
 
-consul kv put config/accounts/resilience4j.circuitbreaker.instances.notificationsService.register-health-indicator "true" 
-consul kv put config/accounts/resilience4j.circuitbreaker.instances.notificationsService.failure-rate-threshold "50"
+consul kv put config/accounts/resilience4j.circuitbreaker.instances.notifications.register-health-indicator "true"
+consul kv put config/accounts/resilience4j.circuitbreaker.instances.notifications.failure-rate-threshold "50"
+consul kv put config/accounts/resilience4j.circuitbreaker.instances.notifications.record-exceptions[0] "feign.RetryableException"
+consul kv put config/accounts/resilience4j.circuitbreaker.instances.notifications.record-exceptions[1] "java.net.UnknownHostException"
+consul kv put config/accounts/resilience4j.circuitbreaker.instances.notifications.record-exceptions[2] "org.springframework.web.client.ResourceAccessException"
+consul kv put config/accounts/resilience4j.circuitbreaker.instances.notifications.record-exceptions[3] "java.io.IOException"
 
 
 # cash
@@ -42,8 +50,12 @@ consul kv put config/cash/spring.application.name "cash"
 consul kv put config/cash/spring.security.oauth2.client.registration.keycloak.client-id "cash"
 consul kv put config/cash/spring.security.oauth2.client.registration.keycloak.client-secret "VKgaEyKXFsc5QJJrtDolB2Luv7KyeXth"
 
-consul kv put config/cash/resilience4j.circuitbreaker.instances.accountsService.register-health-indicator "true"
-consul kv put config/cash/resilience4j.circuitbreaker.instances.accountsService.failure-rate-threshold "50"
+consul kv put config/cash/resilience4j.circuitbreaker.instances.accounts.register-health-indicator "true"
+consul kv put config/cash/resilience4j.circuitbreaker.instances.accounts.failure-rate-threshold "50"
+consul kv put config/cash/resilience4j.circuitbreaker.instances.accounts.record-exceptions[0] "feign.RetryableException"
+consul kv put config/cash/resilience4j.circuitbreaker.instances.accounts.record-exceptions[1] "java.net.UnknownHostException"
+consul kv put config/cash/resilience4j.circuitbreaker.instances.accounts.record-exceptions[2] "org.springframework.web.client.ResourceAccessException"
+consul kv put config/cash/resilience4j.circuitbreaker.instances.accounts.record-exceptions[3] "java.io.IOException"
 
 
 # transfer
@@ -53,8 +65,12 @@ consul kv put config/transfer/spring.application.name "transfer"
 consul kv put config/transfer/spring.security.oauth2.client.registration.keycloak.client-id "transfer"
 consul kv put config/transfer/spring.security.oauth2.client.registration.keycloak.client-secret "tFVIAzOu86RAkgbIzmZgEkeCoOYk74w1"
 
-consul kv put config/transfer/resilience4j.circuitbreaker.instances.accountsService.register-health-indicator "true"
-consul kv put config/transfer/resilience4j.circuitbreaker.instances.accountsService.failure-rate-threshold "50"
+consul kv put config/transfer/resilience4j.circuitbreaker.instances.accounts.register-health-indicator "true"
+consul kv put config/transfer/resilience4j.circuitbreaker.instances.accounts.failure-rate-threshold "50"
+consul kv put config/transfer/resilience4j.circuitbreaker.instances.accounts.record-exceptions[0] "feign.RetryableException"
+consul kv put config/transfer/resilience4j.circuitbreaker.instances.accounts.record-exceptions[1] "java.net.UnknownHostException"
+consul kv put config/transfer/resilience4j.circuitbreaker.instances.accounts.record-exceptions[2] "org.springframework.web.client.ResourceAccessException"
+consul kv put config/transfer/resilience4j.circuitbreaker.instances.accounts.record-exceptions[3] "java.io.IOException"
 
 
 # notifications
@@ -84,14 +100,26 @@ consul kv put config/front/spring.application.name "front"
 consul kv put config/front/spring.security.oauth2.client.registration.keycloak.client-id "front"
 consul kv put config/front/spring.security.oauth2.client.registration.keycloak.client-secret "moY8OTX4GbDI5AwmholMgAXT0aJDCSpf"
 
-consul kv put config/front/resilience4j.circuitbreaker.instances.accountsService.register-health-indicator "true" 
-consul kv put config/front/resilience4j.circuitbreaker.instances.accountsService.failure-rate-threshold "50"
+consul kv put config/front/resilience4j.circuitbreaker.instances.accounts.register-health-indicator "true"
+consul kv put config/front/resilience4j.circuitbreaker.instances.accounts.failure-rate-threshold "50"
+consul kv put config/front/resilience4j.circuitbreaker.instances.accounts.record-exceptions[0] "feign.RetryableException"
+consul kv put config/front/resilience4j.circuitbreaker.instances.accounts.record-exceptions[1] "java.net.UnknownHostException"
+consul kv put config/front/resilience4j.circuitbreaker.instances.accounts.record-exceptions[2] "org.springframework.web.client.ResourceAccessException"
+consul kv put config/front/resilience4j.circuitbreaker.instances.accounts.record-exceptions[3] "java.io.IOException"
 
-consul kv put config/front/resilience4j.circuitbreaker.instances.cashService.register-health-indicator "true"
-consul kv put config/front/resilience4j.circuitbreaker.instances.cashService.failure-rate-threshold "50"
+consul kv put config/front/resilience4j.circuitbreaker.instances.cash.register-health-indicator "true"
+consul kv put config/front/resilience4j.circuitbreaker.instances.cash.failure-rate-threshold "50"
+consul kv put config/front/resilience4j.circuitbreaker.instances.cash.record-exceptions[0] "feign.RetryableException"
+consul kv put config/front/resilience4j.circuitbreaker.instances.cash.record-exceptions[1] "java.net.UnknownHostException"
+consul kv put config/front/resilience4j.circuitbreaker.instances.cash.record-exceptions[2] "org.springframework.web.client.ResourceAccessException"
+consul kv put config/front/resilience4j.circuitbreaker.instances.cash.record-exceptions[3] "java.io.IOException"
 
-consul kv put config/front/resilience4j.circuitbreaker.instances.transferService.register-health-indicator "true"
-consul kv put config/front/resilience4j.circuitbreaker.instances.transferService.failure-rate-threshold "50"
+consul kv put config/front/resilience4j.circuitbreaker.instances.transfer.register-health-indicator "true"
+consul kv put config/front/resilience4j.circuitbreaker.instances.transfer.failure-rate-threshold "50"
+consul kv put config/front/resilience4j.circuitbreaker.instances.transfer.record-exceptions[0] "feign.RetryableException"
+consul kv put config/front/resilience4j.circuitbreaker.instances.transfer.record-exceptions[1] "java.net.UnknownHostException"
+consul kv put config/front/resilience4j.circuitbreaker.instances.transfer.record-exceptions[2] "org.springframework.web.client.ResourceAccessException"
+consul kv put config/front/resilience4j.circuitbreaker.instances.transfer.record-exceptions[3] "java.io.IOException"
 
 
 # gateway

@@ -26,7 +26,7 @@ Contract.make {
             contentType(applicationJson())
         }
         body([
-                name: "Иван Иванов",
+                name: "Вася Пупкин",
                 login: "testuser",
                 password: "*********",
                 email: "test@yandex.ru",

@@ -1,14 +1,13 @@
 package ru.yandex.transfer.api;
 
-import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
-import io.github.resilience4j.retry.annotation.Retry;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.accounts.dto.AccountDto;
 
-@FeignClient(name = "accounts", configuration = OAuth2FeignConfiguration.class)
-@CircuitBreaker(name = "accountsService", fallbackMethod = "getAccountFallback")
-@Retry(name = "accountsService", fallbackMethod = "getAccountFallback")
+import java.util.Collections;
+
+@FeignClient(name = "accounts", fallback = AccountsClient.AccountsFallback.class/*, configuration = OAuth2FeignConfiguration.class*/)
 public interface AccountsClient {
     @GetMapping("/api/accounts/{login}")
     AccountDto getAccount(@PathVariable String login);
@@ -16,11 +15,22 @@ public interface AccountsClient {
     @PostMapping("/api/accounts/{login}/balance")
     AccountDto updateBalance(@PathVariable String login, @RequestParam Double balance);
 
-    default AccountDto getAccountFallback(String login, Throwable t) {
-        throw new ServiceUnavailableException("Сервис аккаунтов временно недоступен. Невозможно получить данные.");
-    }
+    @Component
+    class AccountsFallback implements AccountsClient {
+        @Override
+        public AccountDto updateBalance(@PathVariable String login, @RequestParam Double balance) {
+            return AccountDto.builder()
+                    .login(login)
+                    .errors(Collections.singletonList("Сервис лицевых счетов временно недоступен"))
+                    .build();
+        }
 
-    default AccountDto updateBalanceFallback(String login, Double balance, Throwable t) {
-        throw new ServiceUnavailableException("Сервис аккаунтов временно недоступен. Невозможно получить данные.");
+        @Override
+        public AccountDto getAccount(@PathVariable String login) {
+            return AccountDto.builder()
+                    .login(login)
+                    .errors(Collections.singletonList("Сервис лицевых счетов временно недоступен"))
+                    .build();
+        }
     }
 }

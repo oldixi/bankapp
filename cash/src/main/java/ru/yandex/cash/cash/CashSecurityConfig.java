@@ -23,10 +23,8 @@ public class CashSecurityConfig {
                         .maxSessionsPreventsLogin(false))
                 .oauth2Client(Customizer.withDefaults())
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
-                //.oauth2ResourceServer(oauth2 -> oauth2.disable()) // временно отключить OAuth2
                 .authorizeHttpRequests(authz -> authz
                         .anyRequest().authenticated())
-                        //.anyRequest().permitAll())
                 .csrf(AbstractHttpConfigurer::disable);
         return http.build();
     }

@@ -12,7 +12,11 @@ public class GatewayConfig {
     public RouteLocator customRouteLocator(RouteLocatorBuilder builder) {
         return builder.routes()
                 .route("front", r -> r
-                        .path("/**", "/", "/login", "/logout", "/signup")
+                        .path( "/", "/login**", "/logout**", "/signup**", "/user/**")
+                        .filters(f -> f
+                                .tokenRelay()
+                                .preserveHostHeader()
+                                /*.setResponseHeader("X-Gateway-Base-Url", "http://localhost:8087")*/)
                         .uri("lb://front"))
                 .route("accounts", r -> r
                         .path("/api/accounts/**")

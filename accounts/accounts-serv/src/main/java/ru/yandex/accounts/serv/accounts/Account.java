@@ -27,6 +27,7 @@ public class Account {
     @NotBlank
     private String email;
     private LocalDate birthdate;
+    @Builder.Default
     @Column(columnDefinition = "double precision default 0.0")
     private Double balance = 0.0;
 }

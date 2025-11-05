@@ -19,22 +19,23 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 @Slf4j
 public class FrontService implements UserDetailsService {
+/*    private final Resilience4JCircuitBreakerFactory circuitBreakerFactory;
+    private final CircuitBreakerFunc circuitBreaker;*/
     private final AccountsClient accountsClient;
     private final CashClient cashClient;
     private final TransferClient transferClient;
 
     @Override
     public UserDetails loadUserByUsername(String login) {
-        log.info("loadUserByUsername {}", login);
+        log.debug("loadUserByUsername {}", login);
         try {
-            /*UserDetails*/ AccountDto user = accountsClient.loadUserByUsername(login);
-            log.info("loadUserByUsername login: user={}", user);
-
-            return toUserSecurityDto(user);
-            //return accountsClient.loadUserByUsername(login);
+            return toUserSecurityDto(accountsClient.loadUserByUsername(login));
         } catch (Exception e) {
             log.warn("loadUserByUsername login {} error: {}", login, e.getMessage());
-            return NewAccountDto.builder().login(login).errors(Collections.singletonList(e.getMessage())).build();
+            return NewAccountDto.builder()
+                    .login(login)
+                    .errors(Collections.singletonList("Сервис лицевых счетов временно недоступен: " + e.getMessage()))
+                    .build();
         }
     }
 
@@ -55,7 +56,10 @@ public class FrontService implements UserDetailsService {
         try {
             return accountsClient.register(userToSave);
         } catch (Exception e) {
-            return AccountDto.builder().login(login).errors(Collections.singletonList(e.getMessage())).build();
+            return AccountDto.builder()
+                    .login(login)
+                    .errors(Collections.singletonList("Сервис лицевых счетов временно недоступен: " + e.getMessage()))
+                    .build();
         }
     }
 
@@ -63,7 +67,10 @@ public class FrontService implements UserDetailsService {
         try {
             return accountsClient.getAccount(userLogin);
         } catch (Exception e) {
-            return AccountDto.builder().login(userLogin).errors(Collections.singletonList(e.getMessage())).build();
+            return AccountDto.builder()
+                    .login(userLogin)
+                    .errors(Collections.singletonList("Сервис лицевых счетов временно недоступен: " + e.getMessage()))
+                    .build();
         }
     }
 
@@ -79,7 +86,10 @@ public class FrontService implements UserDetailsService {
         try {
             return accountsClient.updateAccountPassword(login, password, confirmPassword);
         } catch (Exception e) {
-            return AccountDto.builder().login(login).errors(Collections.singletonList(e.getMessage())).build();
+            return AccountDto.builder()
+                    .login(login)
+                    .errors(Collections.singletonList("Сервис лицевых счетов временно недоступен: " + e.getMessage()))
+                    .build();
         }
     }
 
@@ -87,7 +97,10 @@ public class FrontService implements UserDetailsService {
         try {
             return accountsClient.updateAccount(login, name, email, birthdate);
         } catch (Exception e) {
-            return AccountDto.builder().login(login).errors(Collections.singletonList(e.getMessage())).build();
+            return AccountDto.builder()
+                    .login(login)
+                    .errors(Collections.singletonList("Сервис лицевых счетов временно недоступен: " + e.getMessage()))
+                    .build();
         }
     }
 
@@ -95,15 +108,21 @@ public class FrontService implements UserDetailsService {
         try {
             return cashClient.actionWithBalance(login, amount, action);
         } catch (Exception e) {
-            return AccountDto.builder().login(login).errors(Collections.singletonList(e.getMessage())).build();
+            return AccountDto.builder()
+                    .login(login)
+                    .errors(Collections.singletonList("Сервис операций с наличными временно недоступен: " + e.getMessage()))
+                    .build();
         }
     }
 
-    public AccountDto transfer(String login, Double amount, String toLogin) {
+    public AccountDto transfer(String login, Double amount, String toLogin){
         try {
             return transferClient.transfer(login, amount, toLogin);
         } catch (Exception e) {
-            return AccountDto.builder().login(login).errors(Collections.singletonList(e.getMessage())).build();
+            return AccountDto.builder()
+                    .login(login)
+                    .errors(Collections.singletonList("Сервис перевода средств временно недоступен: " + e.getMessage()))
+                    .build();
         }
     }
 
@@ -111,12 +130,14 @@ public class FrontService implements UserDetailsService {
         try {
             return accountsClient.deleteAccount(login);
         } catch (Exception e) {
-            return AccountDto.builder().login(login).errors(Collections.singletonList(e.getMessage())).build();
+            return AccountDto.builder()
+                    .login(login)
+                    .errors(Collections.singletonList("Сервис лицевых счетов временно недоступен: " + e.getMessage()))
+                    .build();
         }
     }
 
     private UserDetails toUserSecurityDto(AccountDto dto) {
-        log.info("toUserSecurityDto: dto={}", dto);
         NewAccountDto user = NewAccountDto.builder()
                 .name(dto.getLogin())
                 .login(dto.getLogin())

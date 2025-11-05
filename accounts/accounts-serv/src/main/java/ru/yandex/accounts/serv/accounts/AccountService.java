@@ -2,8 +2,7 @@ package ru.yandex.accounts.serv.accounts;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.cloud.circuitbreaker.resilience4j.Resilience4JCircuitBreakerFactory;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -21,16 +20,14 @@ import java.util.stream.Stream;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class AccountService /*implements UserDetailsService*/ {
+public class AccountService {
+    private final Resilience4JCircuitBreakerFactory circuitBreakerFactory;
     private final AccountRepository accountRepository;
     private final AccountMapper accountMapper;
     private final PasswordEncoder encoder;
     private final NotificationsClient notificationsClient;
 
-    //@Override
     public AccountDto loadUserByUsername(String login) {
-/*        return accountMapper.toUserSecurityDto(accountRepository.findAccountByLoginIgnoreCase(login)
-                        .orElseThrow(() -> new UsernameNotFoundException("Пользователь не найден")));*/
         return accountMapper.toDto(accountRepository.findAccountByLoginIgnoreCase(login)
                 .orElseThrow(() -> new UsernameNotFoundException("Пользователь не найден")));
     }
@@ -62,12 +59,8 @@ public class AccountService /*implements UserDetailsService*/ {
         accountFromDb.setBalance(balance);
         if (accountFromDb.getEmail() != null && errors.isEmpty()) {
             accountRepository.save(accountMapper.toEntity(accountFromDb));
-            try {
-                notificationsClient.sendNotification(accountFromDb.getEmail(),
-                        "Баланс вашего счета в банковском приложении изменился. Новый баланс:" + balance);
-            } catch (Exception e) {
-                log.warn("Failed to send notification: " + e.getMessage());
-            }
+            notify(accountFromDb.getEmail(),
+                    "Баланс вашего счета в банковском приложении изменился. Новый баланс:" + balance);
         }
         accountFromDb.setErrors(errors);
         return accountFromDb;
@@ -82,13 +75,7 @@ public class AccountService /*implements UserDetailsService*/ {
                 .toList();
         if (accountFromDb.getBalance().equals(0D)) {
             accountRepository.delete(accountMapper.toEntity(accountFromDb));
-
-            try {
-                notificationsClient.sendNotification(accountFromDb.getEmail(),
-                        "Ваш аккаунт был удален из банковского приложения");
-            } catch (Exception e) {
-                log.warn("Failed to send notification: " + e.getMessage());
-            }
+            notify(accountFromDb.getEmail(), "Ваш аккаунт был удален из банковского приложения");
         }
         else accountFromDb.setErrors(errors);
         return accountFromDb;
@@ -111,15 +98,10 @@ public class AccountService /*implements UserDetailsService*/ {
             user.setPassword(encoder.encode(user.getPassword()));
             log.info("register user={}", user);
             user = accountMapper.toUserFrontDto(accountRepository.save(accountMapper.toEntity(user)));
-
-            try {
-                notificationsClient.sendNotification(data.getEmail(),
-                        "Добро пожаловать в банковское приложение! Ваш аккаунт успешно создан.");
-            } catch (Exception e) {
-                log.warn("Failed to send notification: " + e.getMessage());
-            }
+            notify(user.getEmail(), "Добро пожаловать в банковское приложение! Ваш аккаунт успешно создан.");
         }
         user.setErrors(errors);
+        log.info("register finish user={}", user);
         return user;
     }
 
@@ -133,12 +115,7 @@ public class AccountService /*implements UserDetailsService*/ {
         if (errors.isEmpty()) {
             user.setPassword(encoder.encode(newPassword));
             user = accountMapper.toUserFrontDto(accountRepository.save(accountMapper.toEntity(user)));
-            try {
-                notificationsClient.sendNotification(user.getEmail(),
-                        "Ваш пароль в банковском приложении успешно изменен");
-            } catch (Exception e) {
-                log.warn("Failed to send notification: " + e.getMessage());
-            }
+            notify(user.getEmail(), "Ваш пароль в банковском приложении успешно изменен");
         }
         user.setErrors(errors);
         return user;
@@ -160,12 +137,7 @@ public class AccountService /*implements UserDetailsService*/ {
             user.setBirthdate(birthdate);
             log.info("editUserInfo: setBirthdate, user={}", user);
             user = accountMapper.toUserFrontDto(accountRepository.save(accountMapper.toEntity(user)));
-            try {
-                notificationsClient.sendNotification(user.getEmail(),
-                        "Информация о вашем аккаунте в банковском приложении успешно изменена");
-            } catch (Exception e) {
-                log.warn("Failed to send notification: " + e.getMessage());
-            }
+            notify(user.getEmail(), "Информация о вашем аккаунте в банковском приложении успешно изменена");
         }
         user.setErrors(errors);
         return user;
@@ -218,5 +190,14 @@ public class AccountService /*implements UserDetailsService*/ {
             log.warn("convertBirthdate error: birthdate={}", birthdate);
         }
         return null;
+    }
+
+    private void notify(String email, String message) {
+        try {
+            notificationsClient.sendNotification(email, message);
+        } catch (Exception e) {
+            log.warn("notify: Сервис доставки сообщений временно недоступен. Не удалось отправить сообщение на email {}. Ошибка {}",
+                    email, e.getMessage());
+        };
     }
 }

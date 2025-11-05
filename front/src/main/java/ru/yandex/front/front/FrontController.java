@@ -1,8 +1,5 @@
 package ru.yandex.front.front;
 
-import feign.FeignException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -12,8 +9,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import ru.yandex.accounts.dto.AccountDto;
-import ru.yandex.accounts.dto.NewAccountDto;
-import ru.yandex.front.api.AccountsClient;
 
 @Controller
 @RequestMapping
@@ -21,7 +16,6 @@ import ru.yandex.front.api.AccountsClient;
 @Slf4j
 public class FrontController {
     private final FrontService service;
-    private final AccountsClient accountsClient;
 
     /*
     GET "/" - домашняя страница банковского приложения пользователя
@@ -94,7 +88,7 @@ public class FrontController {
                 "name" - ФИ пользователя
     Возвращает: редирект на форму логина "/login"
     */
-/*    @PostMapping("/signup")
+    @PostMapping("/signup")
     public String signup(@RequestParam String login,
                          @RequestParam String password,
                          @RequestParam String confirmPassword,
@@ -110,63 +104,10 @@ public class FrontController {
             redirectAttributes.addFlashAttribute("name", name);
             redirectAttributes.addFlashAttribute("email", email);
             redirectAttributes.addFlashAttribute("birthdate", birthdate);
-            log.info("Ошибки параметров регистрации {}", newAccount.getErrors());
+            log.trace("Ошибки параметров регистрации {}", newAccount.getErrors());
             return "redirect:/signup";
-        } else {
-            return "redirect:/login";
         }
-    }*/
-
-    @PostMapping("/signup")
-    public String signup(@RequestParam String login,
-                         @RequestParam String password,
-                         @RequestParam String confirmPassword,
-                         @RequestParam String name,
-                         @RequestParam String email,
-                         @RequestParam String birthdate,
-                         RedirectAttributes redirectAttributes) {
-        NewAccountDto newAccountDto = NewAccountDto.builder()
-                .login(login)
-                .password(password)
-                .confirmPassword(confirmPassword)
-                .name(name)
-                .email(email)
-                .birthdate(birthdate)
-                .build();
-
-        try {
-            log.info("Sending signup request to accounts service: {}", newAccountDto.getLogin());
-            AccountDto newAccount = accountsClient.register(newAccountDto);
-
-            if (!newAccount.getErrors().isEmpty()) {
-                redirectAttributes.addFlashAttribute("errors", newAccount.getErrors());
-                redirectAttributes.addFlashAttribute("login", login);
-                redirectAttributes.addFlashAttribute("name", name);
-                redirectAttributes.addFlashAttribute("email", email);
-                redirectAttributes.addFlashAttribute("birthdate", birthdate);
-                log.info("Ошибки параметров регистрации {}", newAccount.getErrors());
-                return "redirect:/signup";
-            } else {
-                return "redirect:/login";
-            }
-
-        } catch (FeignException e) {
-            log.error("Feign error during registration. Status: {}, Message: {}", e.status(), e.getMessage());
-            log.error("Feign request: {}", e.request());
-
-            if (e.status() == 403) {
-                redirectAttributes.addFlashAttribute("error",
-                        "Доступ запрещен. Проверьте CSRF настройки accounts сервиса.");
-            } else {
-                redirectAttributes.addFlashAttribute("error",
-                        "Ошибка связи с сервисом accounts: " + e.getMessage());
-            }
-        } catch (Exception e) {
-            log.error("Unexpected error during registration: ", e);
-            redirectAttributes.addFlashAttribute("error", "Неожиданная ошибка: " + e.getMessage());
-        }
-
-        return "redirect:/signup";
+        return "redirect:/login";
     }
 
     /*
@@ -191,7 +132,6 @@ public class FrontController {
         if (!account.getErrors().isEmpty()) {
             redirectAttributes.addFlashAttribute("passwordErrors", account.getErrors());
         }
-
         return "redirect:/user/main";
     }
 
@@ -219,7 +159,6 @@ public class FrontController {
         if (!account.getErrors().isEmpty()) {
             redirectAttributes.addFlashAttribute("userAccountErrors", account.getErrors());
         }
-
         return "redirect:/user/main";
     }
 
@@ -245,7 +184,6 @@ public class FrontController {
         if (!account.getErrors().isEmpty()) {
             redirectAttributes.addFlashAttribute("cashErrors", account.getErrors());
         }
-
         return "redirect:/user/main";
     }
 
@@ -268,7 +206,6 @@ public class FrontController {
         if (!account.getErrors().isEmpty()) {
             redirectAttributes.addFlashAttribute("transferErrors", account.getErrors());
         }
-
         return "redirect:/user/main";
     }
 
@@ -288,8 +225,8 @@ public class FrontController {
         AccountDto account = service.delete(login);
         if (!account.getErrors().isEmpty()) {
             redirectAttributes.addFlashAttribute("deleteErrors", account.getErrors());
+            return "redirect:/user/main";
         }
-
         return "redirect:/logout";
     }
 }

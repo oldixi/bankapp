@@ -74,13 +74,20 @@
 
 
 ## _Запуск приложения_
+Собрать jar сервисов:<br>
+gradle bootJar<br>
 Приложение можно запустить:<br>
 * локально<br>
+    _запустить локально consul_<br>
+    _выполнить скрипт загрузки ключей ./load_consul_config.sh_<br>
+    _запустить локально keycloak_<br>
+    _импортировать realm из файла realm-export.json_<br>
     _java -jar notifications-0.0.1.jar_<br>
     _java -jar accounts-0.0.1.jar_<br>
     _java -jar cash-0.0.1.jar_<br>
     _java -jar transfer-0.0.1.jar_<br>
     _java -jar front-0.0.1.jar_<br>
-Локальные СУБД PostrgeSQL17, Keycloak (экспорт realm - realm-export.json), Consul (загрузка контекста - ./load-consul-config.sh)
+    _java -jar gateway-0.0.1.jar_<br>
+Локальные СУБД PostrgeSQL17, Keycloak, Consul
 * в Docker-контейнере<br>
 _docker-compose up -d --build_

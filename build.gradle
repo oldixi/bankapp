@@ -11,12 +11,6 @@ allprojects {
 	repositories {
 		mavenCentral()
 	}
-
-	java {
-		toolchain {
-			languageVersion = JavaLanguageVersion.of(21)
-		}
-	}
 }
 
 subprojects {
@@ -24,12 +18,24 @@ subprojects {
 	apply plugin: 'org.springframework.boot'
 	apply plugin: 'io.spring.dependency-management'
 
+	java {
+		toolchain {
+			languageVersion = JavaLanguageVersion.of(21)
+		}
+	}
+
 	bootJar {
-		enabled = true
+		enabled = false
 	}
 
 	jar {
 		enabled = true
+	}
+
+	if (project.name in ['front', 'gateway', 'cash', 'transfer', 'notifications', 'accounts-serv']) {
+		bootJar {
+			enabled = true
+		}
 	}
 
 	ext {
@@ -59,6 +65,7 @@ subprojects {
 		annotationProcessor 'org.projectlombok:lombok'
 
 		if (project.name == 'front') {
+			implementation 'org.aspectj:aspectjweaver'
 			implementation 'org.springframework.boot:spring-boot-starter-web'
 			implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 			testImplementation 'org.springframework.cloud:spring-cloud-starter-contract-stub-runner'
@@ -71,6 +78,7 @@ subprojects {
 		}
 
 		if (project.name == 'account-serv') {
+			implementation 'org.aspectj:aspectjweaver'
 			implementation 'org.springframework.boot:spring-boot-starter-web'
 			implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 			implementation 'jakarta.servlet:jakarta.servlet-api:6.0.0'
@@ -83,6 +91,7 @@ subprojects {
 		}
 
 		if (project.name == 'accounts:account-serv') {
+			implementation 'org.aspectj:aspectjweaver'
 			implementation 'org.springframework.boot:spring-boot-starter-web'
 			implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 			implementation 'jakarta.servlet:jakarta.servlet-api:6.0.0'
@@ -95,6 +104,7 @@ subprojects {
 		}
 
 		if (project.name == 'accounts') {
+			implementation 'org.aspectj:aspectjweaver'
 			implementation 'org.springframework.boot:spring-boot-starter-web'
 			implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 			implementation 'jakarta.servlet:jakarta.servlet-api:6.0.0'
@@ -113,6 +123,7 @@ subprojects {
 		}
 
 		if (project.name == 'cash') {
+			implementation 'org.aspectj:aspectjweaver'
 			implementation project(':accounts:accounts-dto')
 			implementation 'org.springframework.boot:spring-boot-starter-web'
 			testImplementation 'org.springframework.cloud:spring-cloud-starter-contract-stub-runner'
@@ -120,6 +131,7 @@ subprojects {
 		}
 
 		if (project.name == 'transfer') {
+			implementation 'org.aspectj:aspectjweaver'
 			implementation project(':accounts:accounts-dto')
 			implementation 'org.springframework.boot:spring-boot-starter-web'
 			testImplementation 'org.springframework.cloud:spring-cloud-starter-contract-stub-runner'
@@ -142,9 +154,6 @@ subprojects {
 	if (project.name == 'cash') {
 		group = 'ru.yandex.cash'
 		version = '0.0.1-SNAPSHOT'
-		bootJar {
-			mainClass = 'ru.yandex.cash.CashApplication'
-		}
 	}
 
 	if (project.name == 'transfer') {
@@ -210,17 +219,33 @@ configure(subprojects.findAll { it.name in contractServicesConfig.keySet() }) {
 		}
 
 		contractsDslDir = file("src/test/resources/contracts")
+
+		tasks.named('generateClientStubs') {
+			dependsOn('test')
+		}
 	}
 }
 
 tasks.register('collectAllStubs', Copy) {
+	dependsOn subprojects.collect { project ->
+		if (project.name in contractServicesConfig.keySet()) {
+			return project.tasks.named('generateClientStubs')
+		}
+		return []
+	}.findAll { it != null }
+
 	from subprojects.collect { project ->
 		if (project.name in contractServicesConfig.keySet()) {
 			return "${project.projectDir}/build/stubs"
 		}
 		return []
-	}
+	}.findAll { it != null }
+
 	into "${rootProject.projectDir}/stubs-repo"
+
+	doFirst {
+		delete "${rootProject.projectDir}/stubs-repo"
+	}
 }
 
 subprojects { project ->
