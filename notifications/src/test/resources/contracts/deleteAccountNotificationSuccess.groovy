@@ -9,9 +9,9 @@ Contract.make {
 
     request {
         method POST()
-        urlPath("/api/notifications/user@example.com/mail") {
+        urlPath("/api/notifications/delete@gmail.com/email") {
             queryParameters {
-                parameter("text": "Ваш аккаунт был удален из банковского приложения")
+                parameter("message": "Ваш аккаунт был удален из банковского приложения")
             }
         }
         headers {
@@ -21,8 +21,5 @@ Contract.make {
 
     response {
         status OK()
-        headers {
-            contentType(applicationJson())
-        }
     }
 }

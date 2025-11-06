@@ -1,5 +1,6 @@
 HELP.md
 .gradle
+.gradle/**
 build/
 tmp/
 !payments-api/build/libs/*.jar

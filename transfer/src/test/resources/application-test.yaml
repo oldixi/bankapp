@@ -1,0 +1,34 @@
+spring:
+  main:
+    web-application-type: servlet
+  application:
+    name: transfer
+  cloud:
+    consul:
+      host: localhost
+      port: 8500
+      config:
+        enabled: true
+        default-context: apps
+        profile-separator: '-'
+        format: KEY_VALUE
+        fail-fast: false
+      discovery:
+        enabled: false
+  config:
+    import:
+      - "optional:consul:"
+logging:
+  level:
+    org.springframework.cloud.contract: debug
+
+stubrunner:
+  cloud:
+    consul:
+      enabled: false
+    enabled: false
+  idsToServiceIds:
+    ru.yandex:accounts: accounts-service
+    ru.yandex:cash: cash-service
+    ru.yandex:transfer: transfer-service
+    ru.yandex:notifications: notifications-service

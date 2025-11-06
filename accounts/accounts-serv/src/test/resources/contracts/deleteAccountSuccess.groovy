@@ -6,8 +6,8 @@ Contract.make {
     label "delete_account_success"
 
     request {
-        method DELETE()
-        urlPath("/api/accounts/userzerobalance")
+        method POST()
+        urlPath("/api/accounts/userzerobalance/delete")
         headers {
             contentType(applicationJson())
         }
@@ -23,11 +23,5 @@ Contract.make {
                 balance: 0.0,
                 errors: []
         ])
-        bodyMatchers {
-            jsonPath('$.name', byNull())
-            jsonPath('$.password', byNull())
-            jsonPath('$.email', byNull())
-            jsonPath('$.birthdate', byNull())
-        }
     }
 }

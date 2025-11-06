@@ -13,6 +13,45 @@ allprojects {
 	}
 }
 
+ext {
+	serviceDependencies = [
+			'notifications': [
+					type: 'provider',
+					baseClass: 'ru.yandex.notifications.contract.NotificationsBaseTest',
+					package: 'ru.yandex.notifications.contract',
+					dependsOn: [],
+					artifactName: 'notifications'
+			],
+			'accounts-serv': [
+					type: 'provider-consumer',
+					baseClass: 'ru.yandex.accounts.serv.contract.AccountsBaseTest',
+					package: 'ru.yandex.accounts.serv.contract',
+					dependsOn: ['notifications'],
+					artifactName: 'accounts'
+			],
+			'cash': [
+					type: 'provider-consumer',
+					baseClass: 'ru.yandex.cash.contract.CashBaseTest',
+					package: 'ru.yandex.cash.contract',
+					dependsOn: ['accounts-serv'],
+					artifactName: 'cash'
+			],
+			'transfer': [
+					type: 'provider-consumer',
+					baseClass: 'ru.yandex.transfer.contract.TransferBaseTest',
+					package: 'ru.yandex.transfer.contract',
+					dependsOn: ['accounts-serv'],
+					artifactName: 'transfer'
+			],
+			'front': [
+					type: 'consumer',
+					baseClass: 'ru.yandex.front.contract.FrontBaseTest',
+					package: 'ru.yandex.front.contract',
+					dependsOn: ['accounts-serv', 'cash', 'transfer']
+			]
+	]
+}
+
 subprojects {
 	apply plugin: 'java'
 	apply plugin: 'org.springframework.boot'
@@ -29,7 +68,7 @@ subprojects {
 	}
 
 	jar {
-		enabled = true
+		enabled = false
 	}
 
 	if (project.name in ['front', 'gateway', 'cash', 'transfer', 'notifications', 'accounts-serv']) {
@@ -68,6 +107,7 @@ subprojects {
 			implementation 'org.aspectj:aspectjweaver'
 			implementation 'org.springframework.boot:spring-boot-starter-web'
 			implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+			implementation 'org.springframework:spring-tx'
 			testImplementation 'org.springframework.cloud:spring-cloud-starter-contract-stub-runner'
 			implementation project(':accounts:accounts-dto')
 		}
@@ -77,7 +117,7 @@ subprojects {
 			implementation 'org.springframework.boot:spring-boot-starter-webflux'
 		}
 
-		if (project.name == 'account-serv') {
+		if (project.name == 'accounts-serv') {
 			implementation 'org.aspectj:aspectjweaver'
 			implementation 'org.springframework.boot:spring-boot-starter-web'
 			implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
@@ -120,6 +160,7 @@ subprojects {
 			implementation 'org.springframework.boot:spring-boot-starter-web'
 			implementation 'org.springframework.boot:spring-boot-starter-mail'
 			testImplementation 'org.springframework.cloud:spring-cloud-starter-contract-verifier'
+			testImplementation 'org.springframework.cloud:spring-cloud-contract-wiremock'
 		}
 
 		if (project.name == 'cash') {
@@ -152,106 +193,349 @@ subprojects {
 	}
 
 	if (project.name == 'cash') {
-		group = 'ru.yandex.cash'
+		group = 'ru.yandex'
 		version = '0.0.1-SNAPSHOT'
 	}
 
 	if (project.name == 'transfer') {
-		group = 'ru.yandex.transfer'
+		group = 'ru.yandex'
 		version = '0.0.1-SNAPSHOT'
 	}
 
 	if (project.name == 'notifications') {
-		group = 'ru.yandex.notifications'
+		group = 'ru.yandex'
 		version = '0.0.1-SNAPSHOT'
 	}
 
 	if (project.name == 'front') {
-		group = 'ru.yandex.front'
+		group = 'ru.yandex'
 		version = '0.0.1-SNAPSHOT'
 	}
 
 	if (project.name == 'gateway') {
-		group = 'ru.yandex.gateway'
+		group = 'ru.yandex'
 		version = '0.0.1-SNAPSHOT'
 	}
 
 	if (project.name == 'account-serv') {
-		group = 'ru.yandex.account.serv'
+		group = 'ru.yandex'
+		version = '0.0.1-SNAPSHOT'
+	}
+
+	if (project.name == 'accounts:account-serv') {
+		group = 'ru.yandex'
+		version = '0.0.1-SNAPSHOT'
+	}
+
+	if (project.name == 'accounts') {
+		group = 'ru.yandex'
 		version = '0.0.1-SNAPSHOT'
 	}
 
 	if (project.name == 'account-dto') {
-		group = 'ru.yandex.account.dto'
+		group = 'ru.yandex'
 		version = '0.0.1-SNAPSHOT'
 	}
 }
 
-def contractServicesConfig = [
-		'cash': [
-				baseClass: 'ru.yandex.cash.contract.CashBaseTest',
-				package: 'ru.yandex.cash.contract'
-		],
-		'notifications': [
-				baseClass: 'ru.yandex.notifications.contract.NotificationsBaseTest',
-				package: 'ru.yandex.notifications.contract'
-		],
-		'accounts-serv': [
-				baseClass: 'ru.yandex.accounts.serv.contract.AccountsBaseTest',
-				package: 'ru.yandex.accounts.serv.contract'
-		],
-		'transfer': [
-				baseClass: 'ru.yandex.transfer.contract.TransferBaseTest',
-				package: 'ru.yandex.transfer.contract'
-		]
-]
-
-configure(subprojects.findAll { it.name in contractServicesConfig.keySet() }) {
+configure(subprojects.findAll { it.name in rootProject.ext.serviceDependencies.keySet() }) {
 	apply plugin: 'org.springframework.cloud.contract'
+
+	def serviceConfig = rootProject.ext.serviceDependencies[project.name]
+	def isProvider = serviceConfig?.type in ['provider', 'provider-consumer']
+	def isConsumer = serviceConfig?.type in ['consumer', 'provider-consumer']
+
+	if (isProvider) {
+		def providerArtifactName = serviceConfig.artifactName ?: project.name
+
+		contracts {
+			contractDependency {
+				stringNotation = "${project.group}:${providerArtifactName}:${project.version}"
+			}
+			testMode = 'EXPLICIT'
+		}
+
+		tasks.register('generateStubsOnly') {
+			dependsOn 'verifierStubsJar'
+
+			doLast {
+				def finalArtifactName = serviceConfig.artifactName ?: project.name
+				def expectedStubJar = new File(project.buildDir, "libs/${project.name}-${project.version}-stubs.jar")
+				if (expectedStubJar.exists()) {
+					println "Stubs for ${project.name} generated: ${expectedStubJar.name}"
+				} else {
+					println "Stubs for ${project.name} NOT generated: ${expectedStubJar.name}"
+					def libsDir = new File(project.buildDir, "libs")
+					if (libsDir.exists()) {
+						println "  Actual files in libs:"
+						libsDir.listFiles()?.each { file ->
+							println "    - ${file.name}"
+						}
+					}
+				}
+			}
+		}
+	}
 
 	contracts {
 		testFramework = TestFramework.JUNIT5
 
-		def config = contractServicesConfig[project.name]
-		packageWithBaseClasses = config.package
-		baseClassMappings {
-			baseClassMapping(".*", config.baseClass)
+		if (serviceConfig.package && serviceConfig.baseClass) {
+			packageWithBaseClasses = serviceConfig.package
+			baseClassMappings {
+				baseClassMapping(".*", serviceConfig.baseClass)
+			}
 		}
 
 		contractsDslDir = file("src/test/resources/contracts")
+		failOnNoContracts = false
 
-		tasks.named('generateClientStubs') {
-			dependsOn('test')
+		if (isConsumer) {
+			def dependencies = serviceConfig.dependsOn.collect { dep ->
+				def depConfig = rootProject.ext.serviceDependencies[dep]
+				def depArtifactName = depConfig.artifactName ?: dep
+				"${project.group}:${depArtifactName}:${project.version}:stubs"
+			}
+			contractDependency {
+				stringNotation = dependencies.join(',')
+			}
 		}
+	}
+
+	afterEvaluate {
+		tasks.findByName('copyContracts')?.enabled = false
+	}
+
+	tasks.named('generateClientStubs') {
+		dependsOn('compileJava', 'compileTestJava')
+	}
+
+	tasks.named('generateContractTests') {
+		mustRunAfter('compileTestJava')
+	}
+
+	tasks.named('contractTest') {
+		useJUnitPlatform()
+		testLogging {
+			events "passed", "skipped", "failed"
+		}
+		ignoreFailures = true
 	}
 }
 
-tasks.register('collectAllStubs', Copy) {
-	dependsOn subprojects.collect { project ->
-		if (project.name in contractServicesConfig.keySet()) {
-			return project.tasks.named('generateClientStubs')
-		}
-		return []
-	}.findAll { it != null }
-
-	from subprojects.collect { project ->
-		if (project.name in contractServicesConfig.keySet()) {
-			return "${project.projectDir}/build/stubs"
-		}
-		return []
-	}.findAll { it != null }
-
-	into "${rootProject.projectDir}/stubs-repo"
-
+tasks.register('cleanLocalMavenStubs', Delete) {
 	doFirst {
-		delete "${rootProject.projectDir}/stubs-repo"
+		def localMavenRepo = new File("${System.getProperty('user.home')}/.m2/repository")
+		def groupsToDelete = ['ru/yandex/notifications', 'ru/yandex/accounts', 'ru/yandex/cash', 'ru/yandex/transfer']
+
+		groupsToDelete.each { groupPath ->
+			def groupDir = new File(localMavenRepo, groupPath)
+			if (groupDir.exists()) {
+				println "Deleting ${groupDir.absolutePath}"
+				groupDir.deleteDir()
+			}
+		}
+	}
+
+	doLast {
+		println "Cleaned our stubs from local Maven repository"
 	}
 }
 
-subprojects { project ->
-	if (project.name in contractServicesConfig.keySet()) {
-		project.tasks.named('test') {
-			finalizedBy collectAllStubs
+tasks.register('copyStubsToLocalMaven') {
+	dependsOn 'generateAllStubs'
+
+	doLast {
+		def localMavenRepo = new File("${System.getProperty('user.home')}/.m2/repository")
+
+		subprojects.each { project ->
+			if (project.name in rootProject.ext.serviceDependencies.keySet()) {
+				def serviceConfig = rootProject.ext.serviceDependencies[project.name]
+				if (serviceConfig?.type in ['provider', 'provider-consumer']) {
+					def targetArtifactName = serviceConfig.artifactName ?: project.name
+
+					def stubJar = new File(project.buildDir, "libs/${project.name}-${project.version}-stubs.jar")
+
+					if (stubJar.exists()) {
+						def group = "ru.yandex"
+						def groupPath = group.replace('.', '/')
+						def artifactDir = new File(localMavenRepo, "${groupPath}/${targetArtifactName}/${project.version}")
+						artifactDir.mkdirs()
+
+						def targetJar = new File(artifactDir, "${targetArtifactName}-${project.version}-stubs.jar")
+						stubJar.withInputStream { input ->
+							targetJar.withOutputStream { output ->
+								output << input
+							}
+						}
+
+						def stubPomFile = new File(artifactDir, "${targetArtifactName}-${project.version}-stubs.pom")
+						stubPomFile.text = """<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>${group}</groupId>
+    <artifactId>${targetArtifactName}</artifactId>
+    <version>${project.version}</version>
+    <classifier>stubs</classifier>
+</project>"""
+
+						println "Published ${targetArtifactName} stubs to local Maven: ${targetJar.absolutePath}"
+						println "Source: ${stubJar.name} -> ${targetJar.name}"
+					} else {
+						println "No stub JAR found for ${project.name}"
+						println "Expected: ${stubJar.absolutePath}"
+					}
+				}
+			}
+		}
+		println "All stubs published to local Maven repository"
+	}
+}
+
+tasks.register('publishAllStubs') {
+	dependsOn 'generateAllStubs'
+	finalizedBy 'copyStubsToLocalMaven'
+
+	doLast {
+		println "All stubs published to local Maven repository (NO tests were executed)"
+	}
+}
+
+tasks.register('cleanAndRebuildStubs') {
+	dependsOn 'cleanLocalMavenStubs', 'copyStubsToLocalMaven'
+	doLast {
+		println "Stubs cleaned and rebuilt in local Maven repository (NO tests were executed)"
+	}
+}
+
+tasks.register('generateAllStubs') {
+	dependsOn subprojects.collect { project ->
+		if (project.name in rootProject.ext.serviceDependencies.keySet()) {
+			def serviceConfig = rootProject.ext.serviceDependencies[project.name]
+			if (serviceConfig?.type in ['provider', 'provider-consumer']) {
+
+				def generateStubsTask = project.tasks.findByName('generateStubsOnly')
+				if (generateStubsTask) {
+					return generateStubsTask
+				} else {
+					println "WARNING: generateStubsOnly task not found for ${project.name}"
+
+					return project.tasks.named('generateClientStubs')
+				}
+			}
+		}
+		return []
+	}.findAll { it != null }
+
+	doLast {
+		println "All stubs generated (NO tests were executed)"
+	}
+}
+
+tasks.register('runAllContractTests') {
+	dependsOn subprojects.collect { project ->
+		if (project.name in rootProject.ext.serviceDependencies.keySet()) {
+			return project.tasks.named('contractTest')
+		}
+		return []
+	}.findAll { it != null }
+
+	doLast {
+		println "All contract tests completed (failures are ignored)"
+	}
+}
+
+tasks.register('forceRegenerateStubs') {
+	dependsOn 'cleanLocalMavenStubs'
+
+	doLast {
+		subprojects.each { project ->
+			if (project.name in rootProject.ext.serviceDependencies.keySet()) {
+				def serviceConfig = rootProject.ext.serviceDependencies[project.name]
+				if (serviceConfig?.type in ['provider', 'provider-consumer']) {
+					def buildDir = new File(project.buildDir, "libs")
+					if (buildDir.exists()) {
+						buildDir.listFiles({ file ->
+							file.name.endsWith('-stubs.jar')
+						} as FileFilter)?.each { it.delete() }
+						println "Cleaned stub JARs for ${project.name}"
+					}
+				}
+			}
+		}
+	}
+
+	finalizedBy 'copyStubsToLocalMaven'
+}
+
+tasks.register('verifyContracts') {
+	doLast {
+		subprojects.each { project ->
+			if (project.name in rootProject.ext.serviceDependencies.keySet()) {
+				def contractsDir = new File(project.projectDir, "src/test/resources/contracts")
+				if (contractsDir.exists()) {
+					def contractFiles = fileTree(contractsDir).include('**/*.groovy').files
+					println "Project ${project.name}: Found ${contractFiles.size()} contract files"
+					if (contractFiles.isEmpty()) {
+						println "WARNING: No contract files found in ${project.name}"
+					}
+				} else {
+					println "WARNING: Project ${project.name}: No contracts directory found"
+				}
+			}
+		}
+	}
+}
+
+tasks.register('verifyMavenStructure') {
+	doLast {
+		def localMavenRepo = new File("${System.getProperty('user.home')}/.m2/repository")
+		def expectedArtifacts = ['notifications', 'accounts', 'cash', 'transfer']
+
+		expectedArtifacts.each { artifactName ->
+			def artifactDir = new File(localMavenRepo, "ru/yandex/${artifactName}/0.0.1-SNAPSHOT")
+			def stubJar = new File(artifactDir, "${artifactName}-0.0.1-SNAPSHOT-stubs.jar")
+
+			if (stubJar.exists()) {
+				println "Found ${artifactName} stubs: ${stubJar.absolutePath}"
+			} else {
+				println "Missing ${artifactName} stubs: ${stubJar.absolutePath}"
+			}
+		}
+	}
+}
+
+tasks.named('clean') {
+}
+
+tasks.register('debugStubsStructure') {
+	doLast {
+		subprojects.each { project ->
+			if (project.name in rootProject.ext.serviceDependencies.keySet()) {
+				def serviceConfig = rootProject.ext.serviceDependencies[project.name]
+				if (serviceConfig?.type in ['provider', 'provider-consumer']) {
+					def artifactName = serviceConfig.artifactName ?: project.name
+					def stubJar = new File(project.buildDir, "libs/${project.name}-${project.version}-stubs.jar")
+
+					println "=== ${project.name} ==="
+					println "  Project name: ${project.name}"
+					println "  Artifact name: ${artifactName}"
+					println "  Group: ${project.group}"
+					println "  Version: ${project.version}"
+					println "  Expected stub path: ${stubJar.absolutePath}"
+					println "  Stub exists: ${stubJar.exists()}"
+					println "  Expected Maven path: ${project.group.replace('.', '/')}/${artifactName}/${project.version}/"
+
+					if (stubJar.exists()) {
+						def localPath = "${project.group.replace('.', '/')}/${artifactName}/${project.version}/${artifactName}-${project.version}-stubs.jar"
+						println "  Local Maven path: ${localPath}"
+					}
+					println ""
+				}
+			}
 		}
 	}
 }

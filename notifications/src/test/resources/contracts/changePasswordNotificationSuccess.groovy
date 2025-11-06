@@ -9,9 +9,9 @@ Contract.make {
 
     request {
         method POST()
-        urlPath("/api/notifications/user@example.com/mail") {
+        urlPath("/api/notifications/password@gmail.com/email") {
             queryParameters {
-                parameter("text": "Ваш пароль в банковском приложении успешно изменен")
+                parameter("message": "Ваш пароль в банковском приложении успешно изменен")
             }
         }
         headers {
@@ -21,8 +21,5 @@ Contract.make {
 
     response {
         status OK()
-        headers {
-            contentType(applicationJson())
-        }
     }
 }

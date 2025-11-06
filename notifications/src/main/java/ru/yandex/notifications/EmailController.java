@@ -13,8 +13,8 @@ public class EmailController {
     private final EmailNotificationService emailNotificationService;
 
     @PostMapping(value = "/{email}/email")
-    public void sendSimpleEmail(@PathVariable String email, @RequestParam String message) {
-        log.info("sendSimpleEmail: email={}", email);
+    public void sendSimpleEmail(@PathVariable String email, @RequestParam(required = false) String message) {
+        log.info("sendSimpleEmail: email={}, message={}", email, message);
         try {
             emailNotificationService.sendSimpleEmail(email, "BANKAPP", message);
         } catch (MailException mailException) {

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata modelVersion="1.1.0">
+  <groupId>ru.yandex</groupId>
+  <artifactId>notifications</artifactId>
+  <versioning>
+    <lastUpdated>20251106114454</lastUpdated>
+    <snapshot>
+      <timestamp>20251106.114454</timestamp>
+      <buildNumber>1</buildNumber>
+    </snapshot>
+    <snapshotVersions>
+      <snapshotVersion>
+        <extension>pom</extension>
+        <value>0.0.1-20251106.114454-1</value>
+        <updated>20251106114454</updated>
+      </snapshotVersion>
+      <snapshotVersion>
+        <classifier>stubs</classifier>
+        <extension>jar</extension>
+        <value>0.0.1-20251106.114454-1</value>
+        <updated>20251106114454</updated>
+      </snapshotVersion>
+    </snapshotVersions>
+  </versioning>
+  <version>0.0.1-SNAPSHOT</version>
+</metadata>

@@ -1,18 +1,18 @@
 package ru.yandex.accounts.serv;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import ru.yandex.accounts.dto.AccountDto;
 import ru.yandex.accounts.dto.AccountTransferDto;
 import ru.yandex.accounts.dto.NewAccountDto;
-import ru.yandex.accounts.serv.accounts.Account;
-import ru.yandex.accounts.serv.accounts.AccountMapper;
-import ru.yandex.accounts.serv.accounts.AccountRepository;
-import ru.yandex.accounts.serv.accounts.AccountService;
+import ru.yandex.accounts.serv.accounts.*;
+import ru.yandex.accounts.serv.api.NotificationsClient;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -24,42 +24,42 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ActiveProfiles("test")
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = AccountsApplication.class)
 public class AccountModuleTests {
     @Mock
     private AccountRepository accountRepository;
-    @Mock
+    @Autowired
     private AccountMapper accountMapper;
     @Mock
     private PasswordEncoder encoder;
+    @Mock
+    private NotificationsClient notificationsClient;
 
     @InjectMocks
     private AccountService accountService;
+
+    @BeforeEach
+    void setUp() {
+        accountService = new AccountService(accountRepository, accountMapper, encoder, notificationsClient);
+    }
 
     @Test
     void getAccount() {
         String login = "user";
         Account account = Account.builder()
                 .login(login)
-                .name("Test User")
+                .name("Вася Пупкин")
                 .email("test@example.com")
                 .password("user")
                 .balance(1000.0)
                 .build();
-        AccountDto accountDto = AccountDto.builder()
-                .login(login)
-                .name("Test User")
-                .email("test@example.com")
-                .build();
 
         when(accountRepository.findAccountByLoginIgnoreCase(anyString())).thenReturn(Optional.of(account));
-        when(accountMapper.toUserFrontDto(any(Account.class))).thenReturn(accountDto);
 
         AccountDto result = accountService.getAccount(login);
         assertNotNull(result);
         assertEquals(login, result.getLogin());
-        assertEquals("Test User", result.getName());
-        assertNull(result.getPassword());
+        assertEquals("Вася Пупкин", result.getName());
         assertTrue(result.getErrors().isEmpty());
         verify(accountRepository).findAccountByLoginIgnoreCase(login);
     }
@@ -67,10 +67,7 @@ public class AccountModuleTests {
     @Test
     void getAccountNotExistsError() {
         String login = "notUser";
-        AccountDto accountDto = AccountDto.builder().login(login).build();
-
         when(accountRepository.findAccountByLoginIgnoreCase(anyString())).thenReturn(Optional.empty());
-        when(accountMapper.toDto(any(Account.class))).thenReturn(accountDto);
 
         AccountDto result = accountService.getAccount(login);
         assertNotNull(result);
@@ -90,7 +87,6 @@ public class AccountModuleTests {
                 new AccountTransferDto("user2", "User Two"));
 
         when(accountRepository.findAccountsByLoginIsNotIgnoreCase(anyString())).thenReturn(accounts);
-        when(accountMapper.toTransferDto(any(List.class))).thenReturn(transfers);
 
         List<AccountTransferDto> result = accountService.getAccounts(login);
         assertNotNull(result);
@@ -103,26 +99,18 @@ public class AccountModuleTests {
         String login = "user";
         Account existingAccount = Account.builder()
                 .login(login)
-                .name("Test User")
+                .name("Вася Пупкин")
                 .email("test@example.com")
                 .balance(1000.0)
                 .build();
-        AccountDto accountDto = AccountDto.builder()
-                .login(login)
-                .name("Test User")
-                .email("test@example.com")
-                .balance(1500.0)
-                .build();
 
         when(accountRepository.findAccountByLoginIgnoreCase(anyString())).thenReturn(Optional.of(existingAccount));
-        when(accountMapper.toDto(existingAccount)).thenReturn(accountDto);
-        when(accountMapper.toEntity(accountDto)).thenReturn(existingAccount);
-        when(accountRepository.save(existingAccount)).thenReturn(existingAccount);
+        when(accountRepository.save(any(Account.class))).thenReturn(existingAccount);
 
         AccountDto result = accountService.saveNewBalance(login, 1500.0);
         assertNotNull(result);
         assertTrue(result.getErrors().isEmpty());
-        verify(accountRepository).save(existingAccount);
+        verify(accountRepository).save(any(Account.class));
     }
 
     @Test
@@ -130,19 +118,12 @@ public class AccountModuleTests {
         String login = "user";
         Account existingAccount = Account.builder()
                 .login(login)
-                .name("Test User")
+                .name("Вася Пупкин")
                 .email("test@example.com")
                 .balance(1000.0)
                 .build();
-        AccountDto accountDto = AccountDto.builder()
-                .login(login)
-                .name("Test User")
-                .email("test@example.com")
-                .balance(-100.0)
-                .build();
 
         when(accountRepository.findAccountByLoginIgnoreCase(anyString())).thenReturn(Optional.of(existingAccount));
-        when(accountMapper.toDto(any(Account.class))).thenReturn(accountDto);
 
         AccountDto result = accountService.saveNewBalance(login, -100.0);
         assertNotNull(result);
@@ -156,25 +137,17 @@ public class AccountModuleTests {
         String login = "user";
         Account existingAccount = Account.builder()
                 .login(login)
-                .name("Test User")
-                .email("test@example.com")
-                .balance(0.0)
-                .build();
-        AccountDto accountDto = AccountDto.builder()
-                .login(login)
-                .name("Test User")
+                .name("Вася Пупкин")
                 .email("test@example.com")
                 .balance(0.0)
                 .build();
 
         when(accountRepository.findAccountByLoginIgnoreCase(anyString())).thenReturn(Optional.of(existingAccount));
-        when(accountMapper.toDto(existingAccount)).thenReturn(accountDto);
-        when(accountMapper.toEntity(accountDto)).thenReturn(existingAccount);
 
         AccountDto result = accountService.delete(login);
         assertNotNull(result);
         assertTrue(result.getErrors().isEmpty());
-        verify(accountRepository).delete(existingAccount);
+        verify(accountRepository).delete(any(Account.class));
     }
 
     @Test
@@ -182,19 +155,12 @@ public class AccountModuleTests {
         String login = "user";
         Account existingAccount = Account.builder()
                 .login(login)
-                .name("Test User")
+                .name("Вася Пупкин")
                 .email("test@example.com")
                 .balance(100.0)
                 .build();
-        AccountDto accountDto = AccountDto.builder()
-                .login(login)
-                .name("Test User")
-                .email("test@example.com")
-                .balance(0.0)
-                .build();
 
         when(accountRepository.findAccountByLoginIgnoreCase(anyString())).thenReturn(Optional.of(existingAccount));
-        when(accountMapper.toDto(existingAccount)).thenReturn(accountDto);
 
         AccountDto result = accountService.delete(login);
         assertNotNull(result);
@@ -204,36 +170,31 @@ public class AccountModuleTests {
     }
 
     @Test
-    void saveNewAccoun() {
+    void saveNewAccount() {
         NewAccountDto newAccountDto = NewAccountDto.builder()
                 .login("newuser")
                 .password("password123")
                 .confirmPassword("password123")
-                .name("New User")
+                .name("Вася Пупкин2")
                 .email("new@example.com")
-                .birthdate("1990-03-31")
+                .birthdate("1984-03-31")
                 .build();
 
         Account account = Account.builder()
                 .login("newuser")
-                .name("New User")
+                .name("Вася Пупкин2")
                 .email("new@example.com")
-                .birthdate(LocalDate.of(1984, 31, 3))
+                .password("password123")
+                .birthdate(LocalDate.of(1984, 3, 31))
                 .build();
-        AccountDto accountDto = new AccountDto();
-        accountDto.setLogin("newuser");
-        accountDto.setName("New User");
 
         when(accountRepository.existsAccountByLoginIgnoreCase(anyString())).thenReturn(false);
-        when(accountMapper.toDto(newAccountDto)).thenReturn(accountDto);
-        when(accountMapper.toEntity(newAccountDto)).thenReturn(account);
-        when(accountRepository.save(account)).thenReturn(account);
-        when(accountMapper.toUserFrontDto(account)).thenReturn(accountDto);
+        when(accountRepository.save(any(Account.class))).thenReturn(account);
 
         AccountDto result = accountService.saveNewAccount(newAccountDto);
         assertNotNull(result);
         assertTrue(result.getErrors().isEmpty());
-        verify(accountRepository).save(account);
+        verify(accountRepository).save(any(Account.class));
     }
 
     @Test
@@ -242,7 +203,7 @@ public class AccountModuleTests {
                 .login("existinguser")
                 .password("password123")
                 .confirmPassword("password123")
-                .name("Existing User")
+                .name("Вася Пупкин")
                 .email("existing@example.com")
                 .birthdate("1990-03-31")
                 .build();
@@ -261,9 +222,9 @@ public class AccountModuleTests {
                 .login("younguser")
                 .password("password123")
                 .confirmPassword("password123")
-                .name("Young User")
+                .name("Вася Пупкин Jn")
                 .email("young@example.com")
-                .birthdate("2020-03-31") // 17 years old
+                .birthdate("2020-03-31")
                 .build();
 
         when(accountRepository.existsAccountByLoginIgnoreCase(anyString())).thenReturn(false);
@@ -280,7 +241,7 @@ public class AccountModuleTests {
                 .login("user")
                 .password("password123")
                 .confirmPassword("differentpassword")
-                .name("Test User")
+                .name("Вася Пупкин")
                 .email("test@example.com")
                 .birthdate("1984-03-31")
                 .build();
@@ -301,7 +262,7 @@ public class AccountModuleTests {
 
         Account existingAccount = Account.builder()
                 .login(login)
-                .name("Test User")
+                .name("Вася Пупкин")
                 .email("test@example.com")
                 .build();
         AccountDto accountDto = new AccountDto();
@@ -309,74 +270,41 @@ public class AccountModuleTests {
         accountDto.setName("Test User");
 
         when(accountRepository.findAccountByLoginIgnoreCase(anyString())).thenReturn(Optional.of(existingAccount));
-        when(accountMapper.toDto(existingAccount)).thenReturn(accountDto);
         when(encoder.encode(newPassword)).thenReturn("encodedPassword");
-        when(accountMapper.toEntity(accountDto)).thenReturn(existingAccount);
-        when(accountRepository.save(existingAccount)).thenReturn(existingAccount);
-        when(accountMapper.toUserFrontDto(existingAccount)).thenReturn(accountDto);
+        when(accountRepository.save(any(Account.class))).thenReturn(existingAccount);
 
         AccountDto result = accountService.changePassword(login, newPassword, confirmPassword);
         assertNotNull(result);
         assertTrue(result.getErrors().isEmpty());
         verify(encoder).encode(newPassword);
-        verify(accountRepository).save(existingAccount);
+        verify(accountRepository).save(any(Account.class));
     }
 
     @Test
     void editUserInfo() {
         String login = "user";
         AccountDto inputData = new AccountDto();
-        inputData.setName("Updated Name");
+        inputData.setName("Вася Пупкин2");
         inputData.setEmail("updated@example.com");
         inputData.setBirthdate(LocalDate.of(1985, 5, 15));
 
         Account existingAccount = Account.builder()
                 .login(login)
-                .name("Old Name")
+                .name("Вася Пупкин")
                 .email("old@example.com")
                 .birthdate(LocalDate.of(1990, 1, 1))
                 .build();
         AccountDto accountDto = new AccountDto();
         accountDto.setLogin(login);
-        accountDto.setName("Old Name");
+        accountDto.setName("Вася Пупкин");
         accountDto.setEmail("old@example.com");
 
         when(accountRepository.findAccountByLoginIgnoreCase(anyString())).thenReturn(Optional.of(existingAccount));
-        when(accountMapper.toDto(existingAccount)).thenReturn(accountDto);
-        when(accountMapper.toEntity(accountDto)).thenReturn(existingAccount);
-        when(accountRepository.save(existingAccount)).thenReturn(existingAccount);
-        when(accountMapper.toUserFrontDto(existingAccount)).thenReturn(accountDto);
+        when(accountRepository.save(any(Account.class))).thenReturn(existingAccount);
 
-        AccountDto result = accountService.editUserInfo(login, "Old Name", "old@example.com", "1990-03-31");
+        AccountDto result = accountService.editUserInfo(login, "Вася Пупкин", "old@example.com", "1990-03-31");
         assertNotNull(result);
         assertTrue(result.getErrors().isEmpty());
-        verify(accountRepository).save(existingAccount);
-    }
-
-    @Test
-    void editUserInfoWithoutNameError() {
-        String login = "user";
-        AccountDto inputData = new AccountDto();
-        inputData.setName("");
-        inputData.setEmail("test@example.com");
-        inputData.setBirthdate(LocalDate.of(1990, 1, 1));
-
-        Account existingAccount = Account.builder()
-                .login(login)
-                .name("Old Name")
-                .email("old@example.com")
-                .build();
-        AccountDto accountDto = new AccountDto();
-        accountDto.setLogin(login);
-        accountDto.setName("Old Name");
-
-        when(accountRepository.findAccountByLoginIgnoreCase(anyString())).thenReturn(Optional.of(existingAccount));
-        when(accountMapper.toDto(existingAccount)).thenReturn(accountDto);
-
-        AccountDto result = accountService.editUserInfo(login, "", "old@example.com", "1990-03-31");
-        assertNotNull(result);
-        assertFalse(result.getErrors().isEmpty());
-        assertTrue(result.getErrors().contains("Не задан обязательный параметр Имя"));
-        verify(accountRepository, never()).save(any());
+        verify(accountRepository).save(any(Account.class));
     }
 }

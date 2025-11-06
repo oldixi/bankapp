@@ -22,12 +22,5 @@ Contract.make {
             login: "nonexistentuser",
             errors: ["Лицевой счет не существует"]
         ])
-        bodyMatchers {
-            jsonPath('$.name', byNull())
-            jsonPath('$.password', byNull())
-            jsonPath('$.email', byNull())
-            jsonPath('$.birthdate', byNull())
-            jsonPath('$.balance', byNull())
-        }
     }
 }

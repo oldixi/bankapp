@@ -9,7 +9,7 @@ Contract.make {
 
     request {
         method POST()
-        urlPath("/api/cash/testuser") {
+        urlPath("/api/cash/testuser/cash") {
             queryParameters {
                 parameter("amount": "-1000.0")
                 parameter("action": "PUT")

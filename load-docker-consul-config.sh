@@ -140,10 +140,6 @@ load_configuration() {
     put_kv "config/front/server.port" "8086"
     put_kv "config/front/spring.application.name" "front"
 
-    #put_kv "config/front/spring.security.oauth2.client.provider.keycloak.issuer-uri" "http://localhost:8081/realms/bankapp"
-    #put_kv "config/front/spring.security.oauth2.client.registration.keycloak.issuer-uri" "http://localhost:8081/realms/bankapp"
-    #put_kv "config/front/spring.security.oauth2.resourceserver.jwt.issuer-uri" "http://localhost:8081/realms/bankapp"
-    #put_kv "config/front/spring.security.oauth2.resourceserver.jwt.jwk-set-uri" "http://localhost:8081/realms/bankapp/protocol/openid-connect/certs"
     put_kv "config/front/spring.security.oauth2.client.registration.keycloak.client-id" "front"
     put_kv "config/front/spring.security.oauth2.client.registration.keycloak.client-secret" "moY8OTX4GbDI5AwmholMgAXT0aJDCSpf"
 
@@ -164,6 +160,14 @@ load_configuration() {
 
     put_kv "config/gateway/spring.security.oauth2.client.registration.keycloak.client-id" "gateway"
     put_kv "config/gateway/spring.security.oauth2.client.registration.keycloak.client-secret" "sX48hILCYvgMy1f7Cql6RVw5TA4Xpxzh"
+
+    # test-profile
+    put_kv "config/apps-test/spring.security.oauth2.client.provider.keycloak.issuer-uri" "http://localhost:8081/realms/bankapp"
+    put_kv "config/apps-test/spring.security.oauth2.client.registration.keycloak.issuer-uri" "http://localhost:8081/realms/bankapp"
+    put_kv "config/apps-test/spring.security.oauth2.resourceserver.jwt.issuer-uri" "http://localhost:8081/realms/bankapp"
+    put_kv "config/apps-test/spring.security.oauth2.resourceserver.jwt.jwk-set-uri" "http://localhost:8081/realms/bankapp/protocol/openid-connect/certs"
+    put_kv "config/accounts-test/spring.datasource.url" "jdbc:postgresql://localhost:5432/bankapp"
+    put_kv "config/accounts-test/spring.liquibase.url" "jdbc:postgresql://localhost:5432/bankapp"
 }
 
 main() {

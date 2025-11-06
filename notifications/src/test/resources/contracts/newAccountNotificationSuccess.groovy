@@ -7,9 +7,9 @@ Contract.make {
 
     request {
         method POST()
-        urlPath("/api/notifications/newuser@example.com/mail") {
+        urlPath("/api/notifications/new@gmail.com/email") {
             queryParameters {
-                parameter("text": "Добро пожаловать в банковское приложение! Ваш аккаунт успешно создан.")
+                parameter("message": "Добро пожаловать в банковское приложение! Ваш аккаунт успешно создан.")
             }
         }
         headers {
@@ -19,8 +19,5 @@ Contract.make {
 
     response {
         status OK()
-        headers {
-            contentType(applicationJson())
-        }
     }
 }

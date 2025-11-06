@@ -1,13 +1,45 @@
 spring:
   main:
     web-application-type: servlet
+  application:
+    name: cash
   cloud:
-    discovery:
-      enabled: false
-
-server:
-  port: 8083
-
+    consul:
+      host: localhost
+      port: 8500
+      config:
+        enabled: true
+        default-context: apps
+        profile-separator: '-'
+        format: KEY_VALUE
+        fail-fast: false
+      discovery:
+        enabled: false
+  config:
+    import:
+      - "optional:consul:"
 logging:
   level:
     org.springframework.cloud.contract: debug
+
+stubrunner:
+  cloud:
+    consul:
+      enabled: false
+  idsToServiceIds:
+    ru.yandex:cash: cash
+
+# Прямые URL для стабов
+accounts:
+  service:
+    url: http://localhost:8082
+
+#notifications:
+  #service:
+    #url: http://localhost:8085
+
+feign:
+  client:
+    config:
+      default:
+        url: ""

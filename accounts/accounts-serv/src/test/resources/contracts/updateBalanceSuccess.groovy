@@ -6,12 +6,15 @@ Contract.make {
     label "update_balance_success"
 
     request {
-        method PUT()
-        urlPath("/api/accounts/testuser/balance")
+        method POST()
+        urlPath("/api/accounts/testuser/balance") {
+            queryParameters {
+                parameter("balance": 2500.0)
+            }
+        }
         headers {
             contentType(applicationJson())
         }
-        body(2500.0)
     }
 
     response {
@@ -20,7 +23,7 @@ Contract.make {
             contentType(applicationJson())
         }
         body([
-                name: "Иван Иванов",
+                name: "Вася Пупкин",
                 login: "testuser",
                 password: $(regex(".+")),
                 email: "test@yandex.ru",

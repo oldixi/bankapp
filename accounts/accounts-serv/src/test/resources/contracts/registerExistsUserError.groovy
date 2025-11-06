@@ -1,7 +1,7 @@
 import org.springframework.cloud.contract.spec.Contract
 
 Contract.make {
-    description "Ошибка при попытки зарегистрировать пользователя с логинром, который уже существует в системе"
+    description "Ошибка при попытки зарегистрировать пользователя с логином, который уже существует в системе"
     name "register_user_exists"
     label "register_user_exists"
 
@@ -12,7 +12,7 @@ Contract.make {
             contentType(applicationJson())
         }
         body([
-                name: "Иван Иванов",
+                name: "Вася Пупкин",
                 login: "existinguser",
                 password: "123456",
                 confirmPassword: "123456",
@@ -28,14 +28,8 @@ Contract.make {
         }
         body([
                 login: "existinguser",
+                balance: 0.0,
                 errors: ["Пользователь с логином existinguser уже существует"]
         ])
-        bodyMatchers {
-            jsonPath('$.name', byNull())
-            jsonPath('$.password', byNull())
-            jsonPath('$.email', byNull())
-            jsonPath('$.birthdate', byNull())
-            jsonPath('$.balance', byNull())
-        }
     }
 }

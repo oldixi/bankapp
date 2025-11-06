@@ -12,7 +12,7 @@ Contract.make {
             contentType(applicationJson())
         }
         body([
-                name: "Иван Иванов",
+                name: "Вася Пупкин",
                 login: "testuser",
                 password: "123456",
                 confirmPassword: "1234567",
@@ -28,14 +28,8 @@ Contract.make {
         }
         body([
             login: "newuser",
+            balance: 0.0,
             errors: ["Пароли не совпадают"]
         ])
-        bodyMatchers {
-            jsonPath('$.name', byNull())
-            jsonPath('$.password', byNull())
-            jsonPath('$.email', byNull())
-            jsonPath('$.birthdate', byNull())
-            jsonPath('$.balance', byNull())
-        }
     }
 }

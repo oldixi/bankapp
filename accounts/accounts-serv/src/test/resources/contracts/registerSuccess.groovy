@@ -12,8 +12,8 @@ Contract.make {
             contentType(applicationJson())
         }
         body([
-                name: "Иван Иванов",
-                login: "testuser",
+                name: "Вася Пупкин",
+                login: "newuser",
                 password: "123456",
                 confirmPassword: "123456",
                 email: "test@yandex.ru",
@@ -27,8 +27,8 @@ Contract.make {
             contentType(applicationJson())
         }
         body([
-                name: "Иван Иванов",
-                login: "testuser",
+                name: "Вася Пупкин",
+                login: "newuser",
                 password: $(regex(".+")),
                 email: "test@yandex.ru",
                 birthdate: "1984-03-31",

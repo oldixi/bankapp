@@ -1,13 +1,13 @@
 import org.springframework.cloud.contract.spec.Contract
 
 Contract.make {
-    description "Should successfully get account information"
+    description "Успешное получение информации о пользователе"
     name "get_account_success"
     label "get_account_success"
 
     request {
         method GET()
-        urlPath("/api/accounts/existinguser")
+        urlPath("/api/accounts/user1")
         headers {
             contentType(applicationJson())
         }
@@ -19,8 +19,8 @@ Contract.make {
             contentType(applicationJson())
         }
         body([
-            name: "Иван Иванов",
-            login: "testuser",
+            name: "Вася Пупкин",
+            login: "user1",
             password: $(regex(".+")),
             email: "test@yandex.ru",
             birthdate: "1984-03-31",

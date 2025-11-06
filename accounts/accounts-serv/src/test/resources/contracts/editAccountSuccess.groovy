@@ -10,7 +10,7 @@ Contract.make {
         urlPath("/api/accounts/existinguser/edit") {
             queryParameters {
                 parameter("name": "Новое Имя")
-                parameter("email": "oldixi@yandex.ru")
+                parameter("email": "newemail@example.com")
                 parameter("birthdate": "1983-03-17")
             }
         }
@@ -29,7 +29,7 @@ Contract.make {
                 login: "existinguser",
                 password: $(regex(".+")),
                 email: "newemail@example.com",
-                birthdate: "1985-05-15",
+                birthdate: "1983-03-17",
                 balance: 1500.0,
                 errors: []
         ])

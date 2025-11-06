@@ -2,7 +2,6 @@ package ru.yandex.accounts.serv.accounts;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cloud.circuitbreaker.resilience4j.Resilience4JCircuitBreakerFactory;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -21,7 +20,6 @@ import java.util.stream.Stream;
 @Slf4j
 @RequiredArgsConstructor
 public class AccountService {
-    private final Resilience4JCircuitBreakerFactory circuitBreakerFactory;
     private final AccountRepository accountRepository;
     private final AccountMapper accountMapper;
     private final PasswordEncoder encoder;

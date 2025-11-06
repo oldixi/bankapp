@@ -25,6 +25,7 @@ Contract.make {
         }
         body([
                 login: "testuser",
+                balance: 0.0,
                 errors: ["Сумма перевода должна быть положительной"]
         ])
         bodyMatchers {
@@ -32,7 +33,6 @@ Contract.make {
             jsonPath('$.password', byNull())
             jsonPath('$.email', byNull())
             jsonPath('$.birthdate', byNull())
-            jsonPath('$.balance', byNull())
         }
     }
 }

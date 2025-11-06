@@ -15,11 +15,6 @@ spring:
   config:
     import:
       - "optional:consul:"
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: http://localhost:8080/realms/bankapp
 
 logging:
   level:
