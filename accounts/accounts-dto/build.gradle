@@ -1,0 +1,18 @@
+plugins {
+    id 'java-library'
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+}
+
+// Ensure regular jar is created, not boot jar
+jar {
+    enabled = true
+}
+
+bootJar {
+    enabled = false
+}

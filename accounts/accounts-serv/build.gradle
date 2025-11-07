@@ -32,5 +32,5 @@ dependencies {
     implementation project(':accounts:accounts-dto')
     testImplementation 'org.springframework.cloud:spring-cloud-starter-contract-stub-runner'
     testImplementation 'org.springframework.cloud:spring-cloud-starter-contract-verifier'
+    testImplementation 'com.h2database:h2'
 }
-

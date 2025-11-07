@@ -12,9 +12,21 @@ spring:
         fail-fast: false
       discovery:
         enabled: true
+        register: true
+        instance-id: ${spring.application.name}:${random.value}
+        service-name: ${spring.application.name}
   config:
     import:
       - "optional:consul:"
+
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 5000
+  circuitbreaker:
+    enabled: true
 
 logging:
   level:
@@ -22,3 +34,4 @@ logging:
     org.springframework.cloud.consul: info
     org.springframework.cloud.bootstrap: info
     com.ecwid.consul: info
+    org.springframework.cloud.openfeign: debug

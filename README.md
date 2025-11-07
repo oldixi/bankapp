@@ -74,20 +74,63 @@
 
 
 ## _Запуск приложения_
-Собрать jar сервисов:<br>
-gradle bootJar<br>
-Приложение можно запустить:<br>
-* локально<br>
-    _запустить локально consul_<br>
-    _выполнить скрипт загрузки ключей ./load_consul_config.sh_<br>
-    _запустить локально keycloak_<br>
-    _импортировать realm из файла realm-export.json_<br>
-    _java -jar notifications-0.0.1.jar_<br>
-    _java -jar accounts-0.0.1.jar_<br>
-    _java -jar cash-0.0.1.jar_<br>
-    _java -jar transfer-0.0.1.jar_<br>
-    _java -jar front-0.0.1.jar_<br>
-    _java -jar gateway-0.0.1.jar_<br>
-Локальные СУБД PostrgeSQL17, Keycloak, Consul
-* в Docker-контейнере<br>
-_docker-compose up -d --build_
+
+### Сборка проекта
+Собрать jar сервисов:
+```bash
+./gradlew bootJar
+```
+
+### Запуск приложения локально
+
+1. Запустить необходимые сервисы:
+   ```bash
+   # Запустить Consul
+   consul agent -dev -client=0.0.0.0
+   
+   # Запустить PostgreSQL
+   # (предполагается, что у вас установлен PostgreSQL 17.5)
+   
+   # Запустить Keycloak
+   # (предполагается, что у вас установлен Keycloak)
+   ```
+
+2. Загрузить конфигурацию в Consul:
+   ```bash
+   ./load-consul-config.sh
+   ```
+
+3. Импортировать realm в Keycloak:
+   ```bash
+   # Импортировать realm-export.json в Keycloak
+   ```
+
+4. Запустить микросервисы в следующем порядке:
+   ```bash
+   java -jar notifications/build/libs/notifications-0.0.1.jar
+   java -jar accounts/accounts-serv/build/libs/accounts-serv-0.0.1.jar
+   java -jar cash/build/libs/cash-0.0.1.jar
+   java -jar transfer/build/libs/transfer-0.0.1.jar
+   java -jar front/build/libs/front-0.0.1.jar
+   java -jar gateway/build/libs/gateway-0.0.1.jar
+   ```
+
+### Запуск в Docker-контейнере
+```bash
+docker-compose up -d --build
+```
+
+## Решение проблем с подключением Feign клиентов
+
+Если вы сталкиваетесь с ошибками типа:
+- `feign.FeignException$NotFound: [404 Not Found]`
+- `java.net.ConnectException: Connection refused`
+
+Это обычно происходит из-за проблем с обнаружением сервисов через Consul. Убедитесь, что:
+
+1. Consul запущен и доступен по адресу `localhost:8500`
+2. Конфигурация загружена в Consul с помощью `./load-consul-config.sh`
+3. Все сервисы правильно зарегистрированы в Consul
+4. Имена сервисов в аннотациях `@FeignClient` соответствуют именам, указанным в конфигурации
+
+Для тестирования в среде разработки убедитесь, что в файлах `application-test.yaml` правильно настроены URL для stub-сервисов.

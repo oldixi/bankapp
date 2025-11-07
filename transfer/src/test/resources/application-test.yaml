@@ -28,7 +28,7 @@ stubrunner:
       enabled: false
     enabled: false
   idsToServiceIds:
-    ru.yandex:accounts: accounts-service
-    ru.yandex:cash: cash-service
-    ru.yandex:transfer: transfer-service
-    ru.yandex:notifications: notifications-service
+    ru.yandex:accounts: accounts
+    ru.yandex:cash: cash
+    ru.yandex:transfer: transfer
+    ru.yandex:notifications: notifications

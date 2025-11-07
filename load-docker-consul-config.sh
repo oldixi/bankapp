@@ -1,51 +1,26 @@
 #!/bin/bash
 
-set -e
-
-CONSUL_HOST=${CONSUL_HOST:-consul}
-CONSUL_PORT=${CONSUL_PORT:-8500}
-CONSUL_URL="http://$CONSUL_HOST:$CONSUL_PORT"
-
-echo "Load consul keys"
+# This script loads configuration into Consul for Docker environment
 
 put_kv() {
     local key="$1"
     local value="$2"
-    local max_retries=3
-    local retry_count=0
-
-    while [ $retry_count -lt $max_retries ]; do
-        if curl -s -X PUT --data "$value" "${CONSUL_URL}/v1/kv/${key}" > /dev/null; then
-            echo "Successfully set: $key = $value"
-            return 0
-        else
-            retry_count=$((retry_count + 1))
-            echo "Failed to set $key (attempt $retry_count/$max_retries), retrying"
-            sleep 2
-        fi
-    done
-
-    echo "Error: Failed to set key $key after $max_retries attempts"
-    return 1
+    echo "Putting $key=$value"
+    curl -s -X PUT -d "$value" "http://$CONSUL_HOST:$CONSUL_PORT/v1/kv/$key" > /dev/null
 }
 
 wait_for_consul() {
-    local max_retries=30
-    local retry_count=0
-
-    echo "Waiting for Consul at $CONSUL_URL"
-
-    until curl -s -f "${CONSUL_URL}/v1/status/leader" > /dev/null; do
-        retry_count=$((retry_count + 1))
-        if [ $retry_count -ge $max_retries ]; then
-            echo "Error: Consul is not available after $max_retries attempts"
-            exit 1
+    echo "Waiting for Consul to be ready at $CONSUL_HOST:$CONSUL_PORT"
+    for i in {1..30}; do
+        if curl -s "http://$CONSUL_HOST:$CONSUL_PORT/v1/status/leader" > /dev/null; then
+            echo "Consul is ready"
+            return 0
         fi
-        echo "Attempt $retry_count/$max_retries: Consul is not ready, retrying in 3 seconds"
-        sleep 3
+        echo "Waiting for Consul... ($i/30)"
+        sleep 2
     done
-
-    echo "Now consul is ready"
+    echo "Consul failed to start"
+    exit 1
 }
 
 load_configuration() {
@@ -57,6 +32,8 @@ load_configuration() {
     put_kv "config/apps/logging.level.org.springframework.cloud.consul" "info"
 
     put_kv "config/apps/feign.circuitbreaker.enabled" "true"
+    put_kv "config/apps/feign.client.config.default.connectTimeout" "5000"
+    put_kv "config/apps/feign.client.config.default.readTimeout" "5000"
     put_kv "config/apps/feign.config.default.retryer" "feign.Retryer.Default"
 
     put_kv "config/apps/spring.security.oauth2.client.provider.keycloak.issuer-uri" "http://keycloak:8080/realms/bankapp"
@@ -123,18 +100,6 @@ load_configuration() {
     put_kv "config/notifications/spring.security.oauth2.client.registration.keycloak.client-id" "notifications"
     put_kv "config/notifications/spring.security.oauth2.client.registration.keycloak.client-secret" "zwNU03EpVjSvqo7UpsJdghw6v0EVe0hC"
 
-    put_kv "config/notifications/spring.mail.host" "smtp.yandex.ru"
-    put_kv "config/notifications/spring.mail.port" "465"
-    put_kv "config/notifications/spring.mail.protocol" "smtps"
-    put_kv "config/notifications/spring.mail.username" "app.oldixi@yandex.ru"
-    put_kv "config/notifications/spring.mail.password" "irwlzrzewdogocpw"
-    put_kv "config/notifications/spring.mail.properties.mail.smtp.auth" "true"
-    put_kv "config/notifications/spring.mail.properties.mail.smtp.ssl.enable" "true"
-    put_kv "config/notifications/spring.mail.properties.mail.smtp.starttls.enable" "false"
-    put_kv "config/notifications/spring.mail.properties.mail.smtp.socketFactory.port" "465"
-    put_kv "config/notifications/spring.mail.properties.mail.smtp.socketFactory.class" "javax.net.ssl.SSLSocketFactory"
-    put_kv "config/notifications/spring.mail.properties.mail.smtp.socketFactory.fallback" "false"
-
     # Front service
     echo "Loading front service configuration"
     put_kv "config/front/server.port" "8086"
@@ -156,7 +121,7 @@ load_configuration() {
     echo "Loading gateway service configuration"
     put_kv "config/gateway/server.port" "8087"
     put_kv "config/gateway/spring.application.name" "gateway"
-    put_kv "config/gateway/spring.cloud.gatewa.discovery.locator.enabled" "true"
+    put_kv "config/gateway/spring.cloud.gateway.discovery.locator.enabled" "true"
 
     put_kv "config/gateway/spring.security.oauth2.client.registration.keycloak.client-id" "gateway"
     put_kv "config/gateway/spring.security.oauth2.client.registration.keycloak.client-secret" "sX48hILCYvgMy1f7Cql6RVw5TA4Xpxzh"

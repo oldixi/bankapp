@@ -7,7 +7,7 @@ import ru.yandex.accounts.dto.AccountDto;
 
 import java.util.Collections;
 
-@FeignClient(name = "accounts", fallback = AccountsClient.AccountsFallback.class)
+@FeignClient(name = "accounts", fallback = AccountsClient.AccountsFallback.class, configuration = FeignConfig.class)
 public interface AccountsClient {
     @GetMapping("/api/accounts/{login}")
     AccountDto getAccount(@PathVariable String login);

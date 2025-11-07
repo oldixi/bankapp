@@ -3,16 +3,13 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/accounts.iml" filepath="$PROJECT_DIR$/.idea/modules/accounts.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/accounts/accounts-dto/accounts-dto.bankapp.accounts.accounts-dto.main.iml" filepath="$PROJECT_DIR$/.idea/modules/accounts/accounts-dto/accounts-dto.bankapp.accounts.accounts-dto.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/accounts.test.iml" filepath="$PROJECT_DIR$/.idea/modules/accounts.test.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/accounts/accounts-dto/bankapp.accounts.accounts-dto.main.iml" filepath="$PROJECT_DIR$/.idea/modules/accounts/accounts-dto/bankapp.accounts.accounts-dto.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/accounts/accounts-serv/bankapp.accounts.accounts-serv.main.iml" filepath="$PROJECT_DIR$/.idea/modules/accounts/accounts-serv/bankapp.accounts.accounts-serv.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/cash/bankapp.cash.main.iml" filepath="$PROJECT_DIR$/.idea/modules/cash/bankapp.cash.main.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/front/bankapp.front.main.iml" filepath="$PROJECT_DIR$/.idea/modules/front/bankapp.front.main.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/gateway/bankapp.gateway.main.iml" filepath="$PROJECT_DIR$/.idea/modules/gateway/bankapp.gateway.main.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/notifications/bankapp.notifications.main.iml" filepath="$PROJECT_DIR$/.idea/modules/notifications/bankapp.notifications.main.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/bankapp.test.iml" filepath="$PROJECT_DIR$/.idea/modules/bankapp.test.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/transfer/bankapp.transfer.main.iml" filepath="$PROJECT_DIR$/.idea/modules/transfer/bankapp.transfer.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/accounts/ru.yandex.accounts.bankapp.accounts.test.iml" filepath="$PROJECT_DIR$/.idea/modules/accounts/ru.yandex.accounts.bankapp.accounts.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/accounts/accounts-serv/ru.yandex.accounts.serv.bankapp.accounts.accounts-serv.main.iml" filepath="$PROJECT_DIR$/.idea/modules/accounts/accounts-serv/ru.yandex.accounts.serv.bankapp.accounts.accounts-serv.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/transfer2/transfer.iml" filepath="$PROJECT_DIR$/transfer2/transfer.iml" />
     </modules>
   </component>

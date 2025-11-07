@@ -27,16 +27,18 @@ stubrunner:
     consul:
       enabled: false
   idsToServiceIds:
+    ru.yandex:accounts: accounts
     ru.yandex:cash: cash
+    ru.yandex:notifications: notifications
 
 # Прямые URL для стабов
 accounts:
   service:
     url: http://localhost:8082
 
-#notifications:
-  #service:
-    #url: http://localhost:8085
+notifications:
+  service:
+    url: http://localhost:8085
 
 feign:
   client:

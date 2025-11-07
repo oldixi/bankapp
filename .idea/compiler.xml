@@ -13,9 +13,9 @@
         <module name="bankapp.cash.main" />
         <module name="bankapp.notifications.main" />
         <module name="bankapp.transfer.main" />
-        <module name="bankapp.accounts.accounts-dto.main" />
+        <module name="ru.yandex.accounts.serv.bankapp.accounts.accounts-serv.main" />
         <module name="bankapp.front.main" />
-        <module name="bankapp.accounts.accounts-serv.main" />
+        <module name="accounts-dto.bankapp.accounts.accounts-dto.main" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel target="21">
@@ -26,5 +26,38 @@
       <module name="template-application.main" target="21" />
       <module name="template-application.test" target="21" />
     </bytecodeTargetLevel>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="accounts-dto.bankapp.accounts.accounts-dto.main" options="-parameters" />
+      <module name="bankapp.accounts" options="-parameters" />
+      <module name="bankapp.accounts.accounts-dto" options="-parameters" />
+      <module name="bankapp.accounts.accounts-dto.test" options="-parameters" />
+      <module name="bankapp.accounts.accounts-serv" options="-parameters" />
+      <module name="bankapp.accounts.accounts-serv.contractTest" options="-parameters" />
+      <module name="bankapp.accounts.accounts-serv.test" options="-parameters" />
+      <module name="bankapp.accounts.main" options="-parameters" />
+      <module name="bankapp.accounts.test" options="-parameters" />
+      <module name="bankapp.cash" options="-parameters" />
+      <module name="bankapp.cash.contractTest" options="-parameters" />
+      <module name="bankapp.cash.main" options="-parameters" />
+      <module name="bankapp.cash.test" options="-parameters" />
+      <module name="bankapp.front" options="-parameters" />
+      <module name="bankapp.front.contractTest" options="-parameters" />
+      <module name="bankapp.front.main" options="-parameters" />
+      <module name="bankapp.front.test" options="-parameters" />
+      <module name="bankapp.gateway" options="-parameters" />
+      <module name="bankapp.gateway.main" options="-parameters" />
+      <module name="bankapp.gateway.test" options="-parameters" />
+      <module name="bankapp.notifications" options="-parameters" />
+      <module name="bankapp.notifications.contractTest" options="-parameters" />
+      <module name="bankapp.notifications.main" options="-parameters" />
+      <module name="bankapp.notifications.test" options="-parameters" />
+      <module name="bankapp.transfer" options="-parameters" />
+      <module name="bankapp.transfer.contractTest" options="-parameters" />
+      <module name="bankapp.transfer.main" options="-parameters" />
+      <module name="bankapp.transfer.test" options="-parameters" />
+      <module name="ru.yandex.accounts.serv.bankapp.accounts.accounts-serv.main" options="-parameters" />
+    </option>
   </component>
 </project>

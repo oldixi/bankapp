@@ -8,7 +8,7 @@ import ru.yandex.api.AccountsClient;
 
 @SpringBootApplication
 @EnableDiscoveryClient
-@EnableFeignClients(basePackages = "ru.yandex.api", clients = {AccountsClient.class})
+@EnableFeignClients(basePackages = {"ru.yandex.api", "ru.yandex.cash"}, clients = {AccountsClient.class})
 public class CashApplication {
     public static void main(String[] args) {
         SpringApplication.run(CashApplication.class, args);

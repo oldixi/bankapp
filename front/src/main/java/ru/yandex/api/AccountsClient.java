@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-@FeignClient(name = "accounts", fallback = AccountsClient.AccountsFallback.class)
+@FeignClient(name = "accounts", fallback = AccountsClient.AccountsFallback.class, configuration = FeignConfig.class)
 public interface AccountsClient {
     @GetMapping("/api/accounts/{login}/login")
     AccountDto loadUserByUsername(@PathVariable String login);
@@ -35,6 +35,9 @@ public interface AccountsClient {
 
     @PostMapping("/api/accounts/{login}/delete")
     AccountDto deleteAccount(@PathVariable String login);
+
+    @PostMapping("/api/accounts/{login}/balance")
+    AccountDto updateBalance(@PathVariable String login, @RequestParam Double balance);
 
     @GetMapping("/api/accounts/{login}/transfer")
     List<AccountTransferDto> getAccounts(@PathVariable String login);
@@ -88,6 +91,14 @@ public interface AccountsClient {
 
         @Override
         public AccountDto deleteAccount(@PathVariable String login) {
+            return AccountDto.builder()
+                    .login(login)
+                    .errors(Collections.singletonList("Сервис лицевых счетов временно недоступен"))
+                    .build();
+        }
+
+        @Override
+        public AccountDto updateBalance(@PathVariable String login, @RequestParam Double balance) {
             return AccountDto.builder()
                     .login(login)
                     .errors(Collections.singletonList("Сервис лицевых счетов временно недоступен"))
