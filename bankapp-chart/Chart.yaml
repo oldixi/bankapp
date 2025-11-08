@@ -6,30 +6,31 @@ version: 0.1.0
 appVersion: "0.0.1"
 dependencies:
   - name: keycloak
-    version: 0.1.0
-    repository: file://charts/keycloak
+    version: 25.2.0
+    repository: https://raw.githubusercontent.com/bitnami/charts/refs/heads/archive-full-index/bitnami/
     condition: keycloak.enabled
-  - name: db
-    version: 0.1.0
-    repository: file://charts/db
+  - name: postgres
+    version: 18.1.8
+    repository: https://raw.githubusercontent.com/bitnami/charts/refs/heads/archive-full-index/bitnami/
+    alias: db
     condition: db.enabled
   - name: accounts
     version: 0.1.0
-    repository: file://charts/accounts
+    repository: file:/./charts/accounts
     condition: accounts.enabled
   - name: cash
     version: 0.1.0
-    repository: file://charts/cash
+    repository: file:/./charts/cash
     condition: cash.enabled
   - name: transfer
     version: 0.1.0
-    repository: file://charts/transfer
+    repository: file:/./charts/transfer
     condition: transfer.enabled
   - name: notifications
     version: 0.1.0
-    repository: file://charts/notifications
+    repository: file:/./charts/notifications
     condition: notifications.enabled
   - name: front
     version: 0.1.0
-    repository: file://charts/front
+    repository: file:/./charts/front
     condition: front.enabled

@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cash-config
+data:
+  application.yaml: |
+    server:
+      port: {{ .Values.config.server.port }}
+    spring:
+      application:
+        name: {{ .Values.config.spring.application.name }}
+      security:
+        oauth2:
+          client:
+            registration:
+              keycloak:
+                client-id: {{ .Values.config.spring.security.oauth2.client.registration.keycloak.client-id }}
+                provider: {{ .Values.config.spring.security.oauth2.client.registration.keycloak.provider }}
+                authorization-grant-type: {{ .Values.config.spring.security.oauth2.client.registration.keycloak.authorization-grant-type }}
+                scope: {{ .Values.config.spring.security.oauth2.client.registration.keycloak.scope }}
+                client-authentication-method: {{ .Values.config.spring.security.oauth2.client.registration.keycloak.client-authentication-method }}
+            provider:
+              keycloak:
+                issuer-uri: {{ .Values.config.spring.security.oauth2.client.provider.keycloak.issuer-uri }}
+          resourceserver:
+            jwt:
+              issuer-uri: {{ .Values.config.spring.security.oauth2.resourceserver.jwt.issuer-uri }}
+              jwk-set-uri: {{ .Values.config.spring.security.oauth2.resourceserver.jwt.jwk-set-uri }}
+    feign:
+      circuitbreaker:
+        enabled: {{ .Values.config.feign.circuitbreaker.enabled }}
+      config:
+        default:
+          retryer: {{ .Values.config.feign.config.default.retryer }}
+  

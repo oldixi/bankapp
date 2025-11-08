@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: keycloak-config
+  labels:
+    app: {{ include "keycloak.name" . }}
+    chart: {{ include "keycloak.chart" . }}
+    release: {{ .Release.Name }}
+data:
+  {{- if .Values.realm.importFromFile }}
+  bankapp-realm.json: |
+    {{ .Files.Get "files/bankapp-realm.json" | indent 4 }}
+  {{- else if .Values.realm.config }}
+  bankapp-realm.json: {{ toJson .Values.realm.config | indent 4 }}
+  {{- end }}

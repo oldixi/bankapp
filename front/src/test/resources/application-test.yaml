@@ -1,25 +1,9 @@
 spring:
   application:
     name: front
-  cloud:
-    consul:
-      host: localhost
-      port: 8500
-      config:
-        enabled: true
-        default-context: apps
-        profile-separator: '-'
-        format: KEY_VALUE
-        fail-fast: false
-      discovery:
-        enabled: true
-  config:
-    import:
-      - "optional:consul:"
 
 logging:
   level:
     ru.yandex.front.feign.CashClient: debug
     ru.yandex.front.feign.AccountsClient: debug
     ru.yandex.front.feign.TransferClient: debug
-    org.springframework.cloud.contract: debug

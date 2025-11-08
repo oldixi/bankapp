@@ -1,0 +1,148 @@
+services:
+  consul:
+    image: consul:1.15
+    ports:
+      - "8500:8500"
+    command: agent -dev -client=0.0.0.0
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8500/v1/status/leader"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  consul-config-loader:
+    build:
+      context: ..
+      dockerfile: ../Dockerfile
+    depends_on:
+      consul:
+        condition: service_healthy
+    environment:
+      - CONSUL_HOST=consul
+      - CONSUL_PORT=8500
+    restart: "no"
+
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: bankapp
+      POSTGRES_USER: bankapp
+      POSTGRES_PASSWORD: bankapp
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bankapp -d bankapp"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:22.0.0
+    container_name: keycloak-pkg
+    command:
+      - start-dev
+      - --http-enabled=true
+      - --import-realm
+    ports:
+      - "8081:8080"
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+      - KC_HOSTNAME_STRICT=false
+      - KC_HOSTNAME_STRICT_HTTPS=false
+      - KC_HTTP_ENABLED=true
+      - KC_HEALTH_ENABLED=true
+      - KEYCLOAK_IMPORT=/opt/keycloak/data/import/bankapp-realm.json
+    volumes:
+      - ./bankapp-realm.json:/opt/keycloak/data/import/bankapp-realm.json
+
+  keycloak-healthcheck:
+    image: curlimages/curl:latest
+    depends_on:
+      - keycloak
+    command:
+      - sh
+      - -c
+      - |
+        echo "Waiting for Keycloak"
+        until curl -f http://keycloak:8080/realms/master; do
+          sleep 5
+        done
+        echo "Keycloak is healthy!"
+    restart: on-failure
+
+  gateway:
+    build: ./gateway
+    ports:
+      - "8087:8087"
+    environment:
+      SPRING_CLOUD_CONSUL_HOST: consul
+    depends_on:
+      consul-config-loader:
+        condition: service_completed_successfully
+      consul:
+        condition: service_healthy
+      keycloak-healthcheck:
+        condition: service_completed_successfully
+
+  front:
+    build: ../front
+    environment:
+      SPRING_CLOUD_CONSUL_HOST: consul
+    depends_on:
+      consul-config-loader:
+        condition: service_completed_successfully
+      consul:
+        condition: service_healthy
+      keycloak-healthcheck:
+        condition: service_completed_successfully
+
+  accounts:
+    build: ../accounts
+    environment:
+      SPRING_CLOUD_CONSUL_HOST: consul
+    depends_on:
+      consul-config-loader:
+        condition: service_completed_successfully
+      consul:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+      keycloak-healthcheck:
+        condition: service_completed_successfully
+
+  cash:
+    build: ../cash
+    environment:
+      SPRING_CLOUD_CONSUL_HOST: consul
+    depends_on:
+      consul-config-loader:
+        condition: service_completed_successfully
+      consul:
+        condition: service_healthy
+      keycloak-healthcheck:
+        condition: service_completed_successfully
+
+  transfer:
+    build: ../transfer
+    environment:
+      SPRING_CLOUD_CONSUL_HOST: consul
+    depends_on:
+      consul-config-loader:
+        condition: service_completed_successfully
+      consul:
+        condition: service_healthy
+      keycloak-healthcheck:
+        condition: service_completed_successfully
+
+  notifications:
+    build: ../notifications
+    environment:
+      SPRING_CLOUD_CONSUL_HOST: consul
+    depends_on:
+      consul-config-loader:
+        condition: service_completed_successfully
+      consul:
+        condition: service_healthy
+      keycloak-healthcheck:
+        condition: service_completed_successfully

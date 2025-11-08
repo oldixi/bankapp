@@ -12,29 +12,21 @@ keycloak:
 
 postgresql:
   enabled: true
-  database: bankapp
-  username: bankapp
-  password: bankapp
 
 accounts:
   enabled: true
-  replicaCount: 1
 
 cash:
   enabled: true
-  replicaCount: 1
 
 transfer:
   enabled: true
-  replicaCount: 1
 
 notifications:
   enabled: true
-  replicaCount: 1
 
 front:
   enabled: true
-  replicaCount: 1
 
 ingress:
   enabled: true
@@ -47,7 +39,6 @@ ingress:
     #nginx.ingress.kubernetes.io/cors-allow-headers: "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization"
     #nginx.ingress.kubernetes.io/enable-cors: "true"
     kubernetes.io/ingress.class: "nginx"
-
   hosts:
     - host: "bankapp.local"
       services:
