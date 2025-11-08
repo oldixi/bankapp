@@ -1,0 +1,78 @@
+global:
+  namespace: bankapp
+  ingress:
+    enabled: true
+    className: "nginx"
+    host: bankapp.local
+
+keycloak:
+  enabled: true
+  realm: bankapp
+  issuerUri: "http://keycloak:8080"
+
+postgresql:
+  enabled: true
+  database: bankapp
+  username: bankapp
+  password: bankapp
+
+accounts:
+  enabled: true
+  replicaCount: 1
+
+cash:
+  enabled: true
+  replicaCount: 1
+
+transfer:
+  enabled: true
+  replicaCount: 1
+
+notifications:
+  enabled: true
+  replicaCount: 1
+
+front:
+  enabled: true
+  replicaCount: 1
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    #nginx.ingress.kubernetes.io/cors-allow-origin: "*"
+    #nginx.ingress.kubernetes.io/cors-allow-methods: "GET, PUT, POST, DELETE, PATCH, OPTIONS"
+    #nginx.ingress.kubernetes.io/cors-allow-headers: "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization"
+    #nginx.ingress.kubernetes.io/enable-cors: "true"
+    kubernetes.io/ingress.class: "nginx"
+
+  hosts:
+    - host: "bankapp.local"
+      services:
+        keycloak:
+          name: "keycloak"
+          port: 8080
+        accounts:
+          name: "accounts"
+          port: 8082
+        cash:
+          name: "cash"
+          port: 8083
+        transfer:
+          name: "transfer"
+          port: 8084
+        notifications:
+          name: "notifications"
+          port: 8085
+        front:
+          name: "front"
+          port: 8086
+      paths:
+        - path: "/health"
+          pathType: Prefix
+          service:
+            name: "front"
+            port: 8086
+  tls: []
