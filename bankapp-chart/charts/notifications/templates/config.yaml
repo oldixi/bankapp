@@ -26,6 +26,14 @@ data:
             jwt:
               issuerUri: {{ .Values.common.global.spring.security.oauth2.resourceserver.jwt.issuerUri }}
               jwkSetUri: {{ .Values.common.global.spring.security.oauth2.resourceserver.jwt.jwkSetUri }}
+      cloud:
+        kubernetes:
+          discovery:
+            enabled: {{ .Values.config.spring.cloud.kubernetes.discovery.enabled }}
+          reload:
+            enabled: {{ .Values.config.spring.cloud.kubernetes.reload.enabled }}
+        loadbalancer:
+          enabled: {{ .Values.config.spring.cloud.loadbalancer.enabled }}              
       mail:
         host: {{ .Values.config.spring.mail.host }}
         port: {{ .Values.config.spring.mail.port }}

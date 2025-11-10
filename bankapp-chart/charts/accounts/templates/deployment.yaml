@@ -47,9 +47,6 @@ spec:
             - name: config-volume
               mountPath: /app/config
               readOnly: true
-          #envFrom:
-          #  - configMapRef:
-          #      name: {{ include "accounts.fullname" . }}
           env:
             - name: SPRING_CONFIG_LOCATION
               value: "classpath:/,file:/app/config/application.yaml"

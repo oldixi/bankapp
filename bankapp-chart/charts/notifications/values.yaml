@@ -57,14 +57,8 @@ httpRoute:
 
 resources: {}
 
-livenessProbe:
-  httpGet:
-    path: /
-    port: http
-readinessProbe:
-  httpGet:
-    path: /
-    port: http
+livenessProbe: {}
+readinessProbe: {}
 
 autoscaling:
   enabled: false
@@ -72,8 +66,14 @@ autoscaling:
   maxReplicas: 100
   targetCPUUtilizationPercentage: 80
 
-volumes: []
-volumeMounts: []
+volumes:
+  - name: config-volume
+    configMap:
+      name: notifications-config
+volumeMounts:
+  - name: config-volume
+    mountPath: /app/config
+    readOnly: true
 nodeSelector: {}
 
 tolerations: []
@@ -92,6 +92,14 @@ config:
           registration:
             keycloak:
               clientId: notifications
+    cloud:
+      kubernetes:
+        discovery:
+          enabled: false
+        reload:
+          enabled: false
+      loadbalancer:
+        enabled: false
     mail:
       host: smtp.yandex.ru
       port: 465

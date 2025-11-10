@@ -1,5 +1,5 @@
 FROM eclipse-temurin:21-jdk-alpine
 WORKDIR /accounts
 COPY accounts-serv/build/libs/ ./
-RUN find . -name "accounts-*.jar" ! -name "*plain*" ! -name "*stubs*" -exec cp {} accounts.jar \;
+RUN find . -name "accounts-*.jar" ! -name "*plain*" ! -name "*stubs*" -exec mv {} accounts.jar \;
 ENTRYPOINT ["java", "-jar", "accounts.jar"]

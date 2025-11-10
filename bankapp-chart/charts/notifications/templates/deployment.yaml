@@ -44,10 +44,6 @@ spec:
             - name: http
               containerPort: {{ .Values.service.port }}
               protocol: TCP
-          volumeMounts:
-            - name: config-volume
-              mountPath: /app/config
-              readOnly: true
           env:
             - name: SPRING_CONFIG_LOCATION
               value: "classpath:/,file:/app/config/application.yaml"
@@ -95,7 +91,3 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      volumes:
-        - name: config-volume
-          configMap:
-            name: notifications-config
