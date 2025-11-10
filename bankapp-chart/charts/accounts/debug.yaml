@@ -1,9 +1,9 @@
-Release "bankapp-accounts" has been upgraded. Happy Helming!
-NAME: bankapp-accounts
-LAST DEPLOYED: Mon Nov 10 14:30:35 2025
+Release "accounts" does not exist. Installing it now.
+NAME: accounts
+LAST DEPLOYED: Mon Nov 10 19:40:52 2025
 NAMESPACE: bankapp
 STATUS: deployed
-REVISION: 2
+REVISION: 1
 USER-SUPPLIED VALUES:
 affinity: {}
 autoscaling:
@@ -78,9 +78,6 @@ readinessProbe:
 replicaCount: 1
 resources: {}
 secrets:
-  .Values:
-    secrets:
-      name: null
   name: accounts-secrets
 securityContext: {}
 service:
@@ -121,7 +118,7 @@ common:
           client:
             provider:
               keycloak:
-                issuerUri: http://keycloak:8080/realms/bankapp
+                issuerUri: http://keycloak/realms/bankapp
             registration:
               keycloak:
                 authorizationGrantType: client_credentials
@@ -130,8 +127,8 @@ common:
                 scope: openid,profile,email
           resourceserver:
             jwt:
-              issuerUri: http://keycloak:8080/realms/bankapp
-              jwkSetUri: http://keycloak:8080/realms/bankapp/protocol/openid-connect/certs
+              issuerUri: http://keycloak/realms/bankapp
+              jwkSetUri: http://keycloak/realms/bankapp/protocol/openid-connect/certs
   replicaCount: 1
 config:
   server:
@@ -200,8 +197,6 @@ readinessProbe:
 replicaCount: 1
 resources: {}
 secrets:
-  .Values:
-    secrets: {}
   name: accounts-secrets
 securityContext: {}
 service:
@@ -222,11 +217,11 @@ HOOKS:
 apiVersion: v1
 kind: Pod
 metadata:
-  name: "bankapp-accounts-test-connection"
+  name: "accounts-test-connection"
   labels:
     helm.sh/chart: accounts-0.1.0
     app.kubernetes.io/name: accounts
-    app.kubernetes.io/instance: bankapp-accounts
+    app.kubernetes.io/instance: accounts
     app.kubernetes.io/version: "0.0.1"
     app.kubernetes.io/managed-by: Helm
   annotations:
@@ -236,7 +231,7 @@ spec:
     - name: wget
       image: busybox
       command: ['wget']
-      args: ['bankapp-accounts:8082']
+      args: ['accounts:8082']
   restartPolicy: Never
 MANIFEST:
 ---
@@ -244,12 +239,12 @@ MANIFEST:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: bankapp-accounts
+  name: accounts
   namespace: bankapp
   labels:
     helm.sh/chart: accounts-0.1.0
     app.kubernetes.io/name: accounts
-    app.kubernetes.io/instance: bankapp-accounts
+    app.kubernetes.io/instance: accounts
     app.kubernetes.io/version: "0.0.1"
     app.kubernetes.io/managed-by: Helm
 ---
@@ -257,7 +252,7 @@ metadata:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: bankapp-accounts
+  name: accounts
   namespace: bankapp
 data:
   application.yaml: |
@@ -284,11 +279,11 @@ data:
                 clientAuthenticationMethod: client_secret_basic
             provider:
               keycloak:
-                issuerUri: http://keycloak:8080/realms/bankapp
+                issuerUri: http://keycloak/realms/bankapp
           resourceserver:
             jwt:
-              issuerUri: http://keycloak:8080/realms/bankapp
-              jwkSetUri: http://keycloak:8080/realms/bankapp/protocol/openid-connect/certs
+              issuerUri: http://keycloak/realms/bankapp
+              jwkSetUri: http://keycloak/realms/bankapp/protocol/openid-connect/certs
     feign:
       circuitbreaker:
         enabled: true
@@ -300,12 +295,12 @@ data:
 apiVersion: v1
 kind: Service
 metadata:
-  name: bankapp-accounts
+  name: accounts
   namespace: bankapp
   labels:
     helm.sh/chart: accounts-0.1.0
     app.kubernetes.io/name: accounts
-    app.kubernetes.io/instance: bankapp-accounts
+    app.kubernetes.io/instance: accounts
     app.kubernetes.io/version: "0.0.1"
     app.kubernetes.io/managed-by: Helm
 spec:
@@ -317,18 +312,18 @@ spec:
       name: http
   selector:
     app.kubernetes.io/name: accounts
-    app.kubernetes.io/instance: bankapp-accounts
+    app.kubernetes.io/instance: accounts
 ---
 # Source: accounts/templates/deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: bankapp-accounts
+  name: accounts
   namespace: bankapp
   labels:
     helm.sh/chart: accounts-0.1.0
     app.kubernetes.io/name: accounts
-    app.kubernetes.io/instance: bankapp-accounts
+    app.kubernetes.io/instance: accounts
     app.kubernetes.io/version: "0.0.1"
     app.kubernetes.io/managed-by: Helm
 spec:
@@ -336,17 +331,17 @@ spec:
   selector:
     matchLabels:
       app.kubernetes.io/name: accounts
-      app.kubernetes.io/instance: bankapp-accounts
+      app.kubernetes.io/instance: accounts
   template:
     metadata:
       labels:
         helm.sh/chart: accounts-0.1.0
         app.kubernetes.io/name: accounts
-        app.kubernetes.io/instance: bankapp-accounts
+        app.kubernetes.io/instance: accounts
         app.kubernetes.io/version: "0.0.1"
         app.kubernetes.io/managed-by: Helm
     spec:
-      serviceAccountName: bankapp-accounts
+      serviceAccountName: accounts
       containers:
         - name: accounts
           image: "bankapp/accounts:0.0.1"
@@ -361,7 +356,7 @@ spec:
               readOnly: true
           #envFrom:
           #  - configMapRef:
-          #      name: bankapp-accounts
+          #      name: accounts
           env:
             - name: SPRING_CONFIG_LOCATION
               value: "classpath:/,file:/app/config/application.yaml"
@@ -392,10 +387,6 @@ spec:
                 secretKeyRef:
                   name: accounts-secret
                   key: oauth2-client-secret
-      volumes:
-        - name: config-volume
-          configMap:
-            name: bankapp-accounts
           livenessProbe:
             httpGet:
               path: /
@@ -404,17 +395,21 @@ spec:
             httpGet:
               path: /
               port: http
+      volumes:
+        - name: config-volume
+          configMap:
+            name: accounts
 ---
 # Source: accounts/templates/ingress.yaml
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: bankapp-accounts
+  name: accounts
   namespace: bankapp
   labels:
     helm.sh/chart: accounts-0.1.0
     app.kubernetes.io/name: accounts
-    app.kubernetes.io/instance: bankapp-accounts
+    app.kubernetes.io/instance: accounts
     app.kubernetes.io/version: "0.0.1"
     app.kubernetes.io/managed-by: Helm
   annotations:
@@ -430,7 +425,7 @@ spec:
             pathType: ImplementationSpecific
             backend:
               service:
-                name: bankapp-accounts
+                name: accounts
                 port:
                   number: 8082
 

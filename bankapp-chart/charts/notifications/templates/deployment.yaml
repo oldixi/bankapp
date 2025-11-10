@@ -40,15 +40,19 @@ spec:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}
               protocol: TCP
-          envFrom:
-            - configMapRef:
-                name: {{ include "notifications.fullname" . }}
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/config
+              readOnly: true
           env:
+            - name: SPRING_CONFIG_LOCATION
+              value: "classpath:/,file:/app/config/application.yaml"
+            - name: SPRING_CONFIG_ADDITIONAL_LOCATION
+              value: "file:/app/config/"
             - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAK_CLIENT_SECRET
               valueFrom:
                 secretKeyRef:
@@ -91,3 +95,7 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      volumes:
+        - name: config-volume
+          configMap:
+            name: notifications-config

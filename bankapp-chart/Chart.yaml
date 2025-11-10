@@ -7,29 +7,29 @@ appVersion: "0.0.1"
 dependencies:
   - name: keycloak
     version: 0.1.0
-    repository: file:/./charts/keycloak
+    repository: file:/charts/keycloak
     condition: keycloak.enabled
   - name: postgresql
-    version: 18.1.8
-    repository: file:/./charts/postgresql
+    version: 0.1.0
+    repository: file:/charts/postgresql
     condition: postgresql.enabled
   - name: accounts
     version: 0.1.0
-    repository: file:/./charts/accounts
+    repository: file:/charts/accounts
     condition: accounts.enabled
   - name: cash
     version: 0.1.0
-    repository: file:/./charts/cash
+    repository: file:/charts/cash
     condition: cash.enabled
   - name: transfer
     version: 0.1.0
-    repository: file:/./charts/transfer
+    repository: file:/charts/transfer
     condition: transfer.enabled
   - name: notifications
     version: 0.1.0
-    repository: file:/./charts/notifications
+    repository: file:/charts/notifications
     condition: notifications.enabled
   - name: front
     version: 0.1.0
-    repository: file:/./charts/front
+    repository: file:/charts/front
     condition: front.enabled

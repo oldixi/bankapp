@@ -17,11 +17,11 @@ global:
               clientAuthenticationMethod: client_secret_basic
           provider:
             keycloak:
-              issuerUri: http://keycloak:8080/realms/bankapp
+              issuerUri: http://keycloak/realms/bankapp
         resourceserver:
           jwt:
-            issuerUri: http://keycloak:8080/realms/bankapp
-            jwkSetUri: http://keycloak:8080/realms/bankapp/protocol/openid-connect/certs
+            issuerUri: http://keycloak/realms/bankapp
+            jwkSetUri: http://keycloak/realms/bankapp/protocol/openid-connect/certs
   feign:
     circuitbreaker:
       enabled: true

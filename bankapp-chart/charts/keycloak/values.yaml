@@ -4,6 +4,7 @@ global:
   postgresql:
     auth:
       password: "6zgqWHmj9I"
+
 realm:
   importFromFile: true
 replicaCount: 1
@@ -71,7 +72,7 @@ keycloak:
       - name: IMPORT_FILES_LOCATIONS
         value: "/opt/bitnami/keycloak/realm/bankapp-realm.json"
       - name: KEYCLOAK_URL
-        value: "http://keycloak:8080"
+        value: "http://keycloak:80"
       - name: KEYCLOAK_USER
         value: "admin"
       - name: KEYCLOAK_PASSWORD
@@ -80,6 +81,8 @@ keycloak:
         value: "true"
       - name: KEYCLOAK_AVAILABILITY_CHECK_TIMEOUT
         value: "300s"
+      - name: IMPORT_MANAGED_AUTHENTICATION_FLOW
+        value: "FULL"
       - name: IMPORT_SKIP_ATTRIBUTES_FOR_FEDERATED_USER
         value: "true"
       - name: IMPORT_MANAGED_PARTIAL_IMPORT
@@ -112,6 +115,9 @@ securityContext: {}
 service:
   type: ClusterIP
   port: 8080
+
+containerPorts:
+  http: 8080
 
 ingress:
   enabled: true

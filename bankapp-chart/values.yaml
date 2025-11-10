@@ -8,7 +8,7 @@ global:
 keycloak:
   enabled: true
   realm: bankapp
-  issuerUri: "http://keycloak:8080"
+  #issuerUri: "http://keycloak:80"
 
 postgresql:
   enabled: true
@@ -47,7 +47,7 @@ ingress:
       services:
         keycloak:
           name: "keycloak"
-          port: 8080
+          port: 80
         accounts:
           name: "accounts"
           port: 8082
