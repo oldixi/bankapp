@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "front.fullname" . }}
+  namespace: {{ .Release.Namespace }}
   labels:
     {{- include "front.labels" . | nindent 4 }}
 spec:
@@ -46,12 +47,12 @@ spec:
               protocol: TCP
           envFrom:
             - configMapRef:
-                name: {{ include "front.fullname" }}
+                name: {{ include "front.fullname" . }}
           env:
             - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAK_CLIENT_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: front-secret
+                  name: front-secrets
                   key: oauth2-client-secret
           {{- with .Values.livenessProbe }}
           livenessProbe:

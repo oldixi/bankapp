@@ -14,22 +14,38 @@ data:
           client:
             registration:
               keycloak:
-                client-id: {{ .Values.config.spring.security.oauth2.client.registration.keycloak.client-id }}
-                provider: {{ .Values.config.spring.security.oauth2.client.registration.keycloak.provider }}
-                authorization-grant-type: {{ .Values.config.spring.security.oauth2.client.registration.keycloak.authorization-grant-type }}
-                scope: {{ .Values.config.spring.security.oauth2.client.registration.keycloak.scope }}
-                client-authentication-method: {{ .Values.config.spring.security.oauth2.client.registration.keycloak.client-authentication-method }}
+                clientId: {{ .Values.config.spring.security.oauth2.client.registration.keycloak.clientId }}
+                provider: {{ .Values.common.global.spring.security.oauth2.client.registration.keycloak.provider }}
+                authorizationGrantType: {{ .Values.common.global.spring.security.oauth2.client.registration.keycloak.authorizationGrantType }}
+                scope: {{ .Values.common.global.spring.security.oauth2.client.registration.keycloak.scope }}
+                clientAuthenticationMethod: {{ .Values.common.global.spring.security.oauth2.client.registration.keycloak.clientAuthenticationMethod }}
             provider:
               keycloak:
-                issuer-uri: {{ .Values.config.spring.security.oauth2.client.provider.keycloak.issuer-uri }}
+                issuerUri: {{ .Values.common.global.spring.security.oauth2.client.provider.keycloak.issuerUri }}
           resourceserver:
             jwt:
-              issuer-uri: {{ .Values.config.spring.security.oauth2.resourceserver.jwt.issuer-uri }}
-              jwk-set-uri: {{ .Values.config.spring.security.oauth2.resourceserver.jwt.jwk-set-uri }}
+              issuerUri: {{ .Values.common.global.spring.security.oauth2.resourceserver.jwt.issuerUri }}
+              jwkSetUri: {{ .Values.common.global.spring.security.oauth2.resourceserver.jwt.jwkSetUri }}
+      mail:
+        host: {{ .Values.config.spring.mail.host }}
+        port: {{ .Values.config.spring.mail.port }}
+        protocol: {{ .Values.config.spring.mail.protocol }}
+        username: {{ .Values.config.spring.mail.username }}
+        properties:
+          mail:
+            smtp:
+              auth: {{ .Values.config.spring.mail.properties.mail.smtp.auth }}
+              ssl:
+                enable: {{ .Values.config.spring.mail.properties.mail.smtp.ssl.enable }}
+              starttls:
+                enable: {{ .Values.config.spring.mail.properties.mail.smtp.starttls.enable }}
+              socketFactory:
+                port: {{ .Values.config.spring.mail.properties.mail.smtp.socketFactory.port }}
+                class: {{ .Values.config.spring.mail.properties.mail.smtp.socketFactory.class }}
+                fallback: {{ .Values.config.spring.mail.properties.mail.smtp.socketFactory.fallback }}
     feign:
       circuitbreaker:
-        enabled: {{ .Values.config.feign.circuitbreaker.enabled }}
+        enabled: {{ .Values.common.global.feign.circuitbreaker.enabled }}
       config:
         default:
-          retryer: {{ .Values.config.feign.config.default.retryer }}
-  
+          retryer: {{ .Values.common.global.feign.config.default.retryer }}            

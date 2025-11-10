@@ -8,8 +8,8 @@ metadata:
     release: {{ .Release.Name }}
 data:
   {{- if .Values.realm.importFromFile }}
-  bankapp-realm.json: |
-    {{ .Files.Get "files/bankapp-realm.json" | indent 4 }}
+  bankapp-realm.json: |-
+  {{ .Files.Get "files/bankapp-realm.json" | nindent 4 }}
   {{- else if .Values.realm.config }}
-  bankapp-realm.json: {{ toJson .Values.realm.config | indent 4 }}
+bankapp-realm.json: {{ toJson .Values.realm.config | nindent 0 }}
   {{- end }}

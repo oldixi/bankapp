@@ -6,14 +6,13 @@ version: 0.1.0
 appVersion: "0.0.1"
 dependencies:
   - name: keycloak
-    version: 25.2.0
-    repository: https://raw.githubusercontent.com/bitnami/charts/refs/heads/archive-full-index/bitnami/
+    version: 0.1.0
+    repository: file:/./charts/keycloak
     condition: keycloak.enabled
-  - name: postgres
+  - name: postgresql
     version: 18.1.8
-    repository: https://raw.githubusercontent.com/bitnami/charts/refs/heads/archive-full-index/bitnami/
-    alias: db
-    condition: db.enabled
+    repository: file:/./charts/postgresql
+    condition: postgresql.enabled
   - name: accounts
     version: 0.1.0
     repository: file:/./charts/accounts

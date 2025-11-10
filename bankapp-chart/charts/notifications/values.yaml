@@ -1,3 +1,5 @@
+global:
+  namespace: bankapp
 replicaCount: 1
 
 image:
@@ -29,7 +31,9 @@ service:
 ingress:
   enabled: true
   className: "nginx"
-  annotations: {}
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
   hosts:
     - host: notifications.local
       paths:
@@ -87,18 +91,7 @@ config:
         client:
           registration:
             keycloak:
-              client-id: notifications
-              provider: keycloak
-              authorization-grant-type: client_credentials
-              scope: openid,profile,email
-              client-authentication-method: client_secret_basic
-          provider:
-            keycloak:
-              issuer-uri: http://keycloak:8080/realms/bankapp
-        resourceserver:
-          jwt:
-            issuer-uri: http://keycloak:8080/realms/bankapp
-            jwk-set-uri: http://keycloak:8080/realms/bankapp/protocol/openid-connect/certs
+              clientId: notifications
     mail:
       host: smtp.yandex.ru
       port: 465
@@ -116,9 +109,3 @@ config:
               port: 465
               class: javax.net.ssl.SSLSocketFactory
               fallback: false
-  feign:
-    circuitbreaker:
-      enabled: true
-    config:
-      default:
-        retryer: feign.Retryer.Default

@@ -12,6 +12,9 @@ keycloak:
 
 postgresql:
   enabled: true
+  primary:
+    persistence:
+      enabled: true
 
 accounts:
   enabled: true

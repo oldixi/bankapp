@@ -1,4 +1,9 @@
+global:
+  namespace: bankapp
 replicaCount: 1
+
+secrets:
+  name: accounts-secrets
 
 image:
   repository: bankapp/accounts
@@ -29,7 +34,9 @@ service:
 ingress:
   enabled: true
   className: "nginx"
-  annotations: {}
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
   hosts:
     - host: accounts.local
       paths:
@@ -84,29 +91,13 @@ config:
       name: accounts
     datasource:
       url: jdbc:postgresql://db:5432/bankapp
-      driver-class-name: org.postgresql.Driver
+      driverClassName: org.postgresql.Driver
     liquibase:
       url: jdbc:postgresql://db:5432/bankapp
+      driverClassName: org.postgresql.Driver
     security:
       oauth2:
         client:
           registration:
             keycloak:
-              client-id: accounts
-              provider: keycloak
-              authorization-grant-type: client_credentials
-              scope: openid,profile,email
-              client-authentication-method: client_secret_basic
-          provider:
-            keycloak:
-              issuer-uri: http://keycloak:8080/realms/bankapp
-        resourceserver:
-          jwt:
-            issuer-uri: http://keycloak:8080/realms/bankapp
-            jwk-set-uri: http://keycloak:8080/realms/bankapp/protocol/openid-connect/certs
-  feign:
-    circuitbreaker:
-      enabled: true
-    config:
-      default:
-        retryer: feign.Retryer.Default
+              clientId: accounts

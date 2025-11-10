@@ -1,0 +1,185 @@
+---
+# Source: accounts/templates/config.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: accounts-config
+data:
+  application.yaml: |
+    server:
+      port: 8082
+    spring:
+      application:
+        name: accounts
+      datasource:
+        url: jdbc:postgresql://db:5432/bankapp
+        driverClassName: org.postgresql.Driver
+      liquibase:
+        url: jdbc:postgresql://db:5432/bankapp
+      security:
+        oauth2:
+          client:
+            registration:
+              keycloak:
+                clientId: accounts
+                provider: keycloak
+                authorizationGrantType: client_credentials
+                scope: openid,profile,email
+                clientAuthenticationMethod: client_secret_basic
+            provider:
+              keycloak:
+                issuerUri: http://keycloak:8080/realms/bankapp
+          resourceserver:
+            jwt:
+              issuerUri: http://keycloak:8080/realms/bankapp
+              jwkSetUri: http://keycloak:8080/realms/bankapp/protocol/openid-connect/certs
+    feign:
+      circuitbreaker:
+        enabled: true
+      config:
+        default:
+          retryer: feign.Retryer.Default
+---
+# Source: accounts/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: release-name-accounts
+  labels:
+    helm.sh/chart: accounts-0.1.0
+    app.kubernetes.io/name: accounts
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/version: "0.0.1"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8082
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: accounts
+    app.kubernetes.io/instance: release-name
+---
+# Source: accounts/templates/statefulset.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: release-name-accounts
+  labels:
+    helm.sh/chart: accounts-0.1.0
+    app.kubernetes.io/name: accounts
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/version: "0.0.1"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: accounts
+      app.kubernetes.io/instance: release-name
+  template:
+    metadata:
+      labels:
+        helm.sh/chart: accounts-0.1.0
+        app.kubernetes.io/name: accounts
+        app.kubernetes.io/instance: release-name
+        app.kubernetes.io/version: "0.0.1"
+        app.kubernetes.io/managed-by: Helm
+    spec:
+      serviceAccountName: release-name-accounts
+      containers:
+        - name: accounts
+          image: "bankapp/accounts:0.0.1"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8082
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: release-name-accounts
+          env:
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: accounts-secret
+                  key: datasource-username
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: accounts-secret
+                  key: datasource-password
+            - name: SPRING_LIQUIBASE_USER
+              valueFrom:
+                secretKeyRef:
+                  name: accounts-secret
+                  key: liquibase-user
+            - name: SPRING_LIQUIBASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: accounts-secret
+                  key: liquibase-password
+            - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAK_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: accounts-secret
+                  key: oauth2-client-secret
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+---
+# Source: accounts/templates/ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: release-name-accounts
+  labels:
+    helm.sh/chart: accounts-0.1.0
+    app.kubernetes.io/name: accounts
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/version: "0.0.1"
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/backend-protocol: HTTP
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: "accounts.local"
+      http:
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: release-name-accounts
+                port:
+                  number: 8082
+---
+# Source: accounts/templates/tests/test-connection.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "release-name-accounts-test-connection"
+  labels:
+    helm.sh/chart: accounts-0.1.0
+    app.kubernetes.io/name: accounts
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/version: "0.0.1"
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['wget']
+      args: ['release-name-accounts:8082']
+  restartPolicy: Never

@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "notifications.fullname" . }}
+  namespace: {{ .Release.Namespace }}
   labels:
     {{- include "notifications.labels" . | nindent 4 }}
 spec:
@@ -46,17 +47,17 @@ spec:
               protocol: TCP
           envFrom:
             - configMapRef:
-                name: {{ include "notifications.fullname" }}
+                name: {{ include "notifications.fullname" . }}
           env:
             - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAK_CLIENT_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: notifications-secret
+                  name: notifications-secrets
                   key: oauth2-client-secret
             - name: SPRING_MAIL_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: notifications-secret
+                  name: notifications-secrets
                   key: mail-password
           {{- with .Values.livenessProbe }}
           livenessProbe:

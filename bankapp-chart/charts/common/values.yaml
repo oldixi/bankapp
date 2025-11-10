@@ -1,0 +1,30 @@
+replicaCount: 1
+global:
+  namespace: bankapp
+  ingress:
+    enabled: true
+    className: "nginx"
+    host: bankapp.local
+  spring:
+    security:
+      oauth2:
+        client:
+          registration:
+            keycloak:
+              provider: keycloak
+              authorizationGrantType: client_credentials
+              scope: openid,profile,email
+              clientAuthenticationMethod: client_secret_basic
+          provider:
+            keycloak:
+              issuerUri: http://keycloak:8080/realms/bankapp
+        resourceserver:
+          jwt:
+            issuerUri: http://keycloak:8080/realms/bankapp
+            jwkSetUri: http://keycloak:8080/realms/bankapp/protocol/openid-connect/certs
+  feign:
+    circuitbreaker:
+      enabled: true
+    config:
+      default:
+        retryer: feign.Retryer.Default

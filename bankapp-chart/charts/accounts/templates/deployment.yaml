@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "accounts.fullname" . }}
+  namespace: {{ .Release.Namespace }}
   labels:
     {{- include "accounts.labels" . | nindent 4 }}
 spec:
@@ -42,10 +43,18 @@ spec:
             - name: http
               containerPort: {{ .Values.service.port }}
               protocol: TCP
-          envFrom:
-            - configMapRef:
-                name: {{ include "accounts.fullname" . }}
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/config
+              readOnly: true
+          #envFrom:
+          #  - configMapRef:
+          #      name: {{ include "accounts.fullname" . }}
           env:
+            - name: SPRING_CONFIG_LOCATION
+              value: "classpath:/,file:/app/config/application.yaml"
+            - name: SPRING_CONFIG_ADDITIONAL_LOCATION
+              value: "file:/app/config/"
             - name: SPRING_DATASOURCE_USERNAME
               valueFrom:
                 secretKeyRef:
@@ -71,6 +80,10 @@ spec:
                 secretKeyRef:
                   name: accounts-secret
                   key: oauth2-client-secret
+      volumes:
+        - name: config-volume
+          configMap:
+            name: {{ include "accounts.fullname" . }}
           {{- with .Values.livenessProbe }}
           livenessProbe:
             {{- toYaml . | nindent 12 }}
