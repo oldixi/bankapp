@@ -74,40 +74,32 @@
 
 
 ## _Запуск приложения_
-Собрать jar сервисов:<br>
-gradle bootJar<br>
-Приложение можно запустить:<br>
-* локально<br>
-    _запустить локально consul_<br>
-    _выполнить скрипт загрузки ключей ./load_consul_config.sh_<br>
-    _запустить локально keycloak_<br>
-    _импортировать realm из файла realm-export.json_<br>
-    _java -jar notifications-0.0.1.jar_<br>
-    _java -jar accounts-0.0.1.jar_<br>
-    _java -jar cash-0.0.1.jar_<br>
-    _java -jar transfer-0.0.1.jar_<br>
-    _java -jar front-0.0.1.jar_<br>
-    _java -jar gateway-0.0.1.jar_<br>
-Локальные СУБД PostrgeSQL17, Keycloak, Consul
-* в Docker-контейнере<br>
-_docker-compose up -d --build_
+Предусмотренно развертывание приложения в Kubernetes с помощью инструментов helm. <br>
+* Возможно запустить каждый сервис по-отдельности (в таком случае следует не забыть развернуть сервис keycloak и postgres -см. зависимости)<br>
+* Все приложение можно развернуть с помощью зонтичного чарта.
 
 Вход приложения осуществляется по адресу:<br>
-http://localhost:8087/login
+http://bankapp/login
 
 Регистрация пользователя доступна на странице:<br>
-http://localhost:8087/signup
+http://bankapp/signup
 
 Основная страница приложения (доступна после логина):<br>
-http://localhost:8087/user/main
+http://bankapp/user/main
 
+Предварительно необходимо: 
+* настроить /etc/hosts:
+```bash
+echo "127.0.0.1 bankapp" | sudo tee -a /etc/hosts
+```
+* прокинуть порты:
+```bash
+sudo kubectl port-forward -n ingress-nginx svc/ingress-nginx-controller 80:80
+```
 
-## _Запуск тестов_
-* удалить stubs'ы из локального maven-репозитория и сгенерировать новые<br>
-./gradlew cleanAndRebuildStubs
-* опубликовать stubs'ы в локальном репозитории<br>
-./gradlew publishAllStubs
+Для автоматического развертывания приложения в Kubernetes после push'а в любую ветку
+```bash
+cd jenkins
+docker compose up -d --build
+```
 
-P.S. контрактные тесты толком не орабатывают, если приложение запущено не локально
-проблема с feign-клиентами, которые отказываются коннектиться, либо не работают со стабами, если настроить коннект.
-Сами контракты, автоматические тесты генерируются.
