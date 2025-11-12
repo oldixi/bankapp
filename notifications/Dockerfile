@@ -1,5 +1,18 @@
-FROM eclipse-temurin:21-jdk-alpine
-WORKDIR /notifications
-COPY build/libs/ ./
-RUN find . -name "notifications-*.jar" ! -name "*plain*" ! -name "*stubs*" -exec mv {} notifications.jar \;
+FROM gradle:8.7-jdk21 AS build
+WORKDIR /workspace
+
+COPY ../build.gradle .
+COPY ../settings.gradle .
+COPY ../gradlew .
+COPY ../gradle/wrapper/gradle-wrapper.jar ../gradle/wrapper/gradle-wrapper.properties ./gradle/wrapper/
+
+COPY src ./src
+
+RUN gradle :notifications:build -x test --no-daemon
+
+FROM eclipse-temurin:21-jre
+WORKDIR /app
+
+COPY --from=build /workspace/notifications/build/libs/notifications.jar notifications.jar
+
 ENTRYPOINT ["java", "-jar", "notifications.jar"]

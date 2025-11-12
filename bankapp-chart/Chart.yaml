@@ -5,22 +5,10 @@ type: application
 version: 0.1.0
 appVersion: "0.0.1"
 dependencies:
-#  - name: keycloak
-#    version: 0.1.0
-#    repository: "file://./charts/keycloak"
-#    condition: keycloak.enabled
   - name: keycloak
     version: 25.2.0
     repository: https://raw.githubusercontent.com/bitnami/charts/refs/heads/archive-full-index/bitnami/
     condition: keycloak.enabled
-#  - name: db
-#    version: 0.1.0
-#    repository: "file://./charts/db"
-#    condition: db.enabled
-#  - name: keycloak
-#    version: "18.10.0"
-#    repository: "https://codecentric.github.io/helm-charts"
-#    condition: keycloak.enabled
   - name: postgresql
     version: 18.1.8
     repository: https://raw.githubusercontent.com/bitnami/charts/refs/heads/archive-full-index/bitnami/

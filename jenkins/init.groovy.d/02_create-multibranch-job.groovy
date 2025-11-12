@@ -6,8 +6,8 @@ import org.jenkinsci.plugins.workflow.multibranch.*
 def env = System.getenv()
 def instance = Jenkins.get()
 
-def jobName       = "YandexHelmApp"
-def githubRepo    = env['GITHUB_REPOSITORY']
+def jobName       = "bankapp"
+def githubRepo     = env['GITHUB_REPOSITORY']
 def credentialsId = "github-creds"
 def scriptPath    = "jenkins/Jenkinsfile"
 
@@ -19,14 +19,14 @@ if (!githubRepo) {
 }
 
 println "--> GITHUB_REPOSITORY = ${githubRepo}"
+println "--> JOB = ${jobName}"
+println "--> SCRIPT_PATH = ${scriptPath}"
 
-// Проверка, существует ли уже такой job
 if (instance.getItem(jobName) != null) {
     println "--> Multibranch job '${jobName}' уже существует. Пропускаем."
     return
 }
 
-// Разбиваем owner/repo
 def parts = githubRepo.split('/')
 if (parts.length != 2) {
     println "Неверный формат GITHUB_REPOSITORY. Ожидалось: owner/repo"
@@ -35,7 +35,6 @@ if (parts.length != 2) {
 def owner = parts[0]
 def repo  = parts[1]
 
-// Создаём GitHub SCM Source
 def source = new GitHubSCMSource(owner, repo)
 source.setCredentialsId(credentialsId)
 source.setTraits([

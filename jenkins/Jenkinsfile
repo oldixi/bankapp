@@ -3,104 +3,162 @@ pipeline {
 
     environment {
         DOCKER_REGISTRY = credentials('DOCKER_REGISTRY')
-        DB_PASSWORD     = credentials('DB_PASSWORD')
+        DB_PASSWORD = credentials('DB_PASSWORD')
         GITHUB_USERNAME = credentials('GITHUB_USERNAME')
-        DB_NAME         = 'mydb'
-        DB_USER         = 'myuser'
-        IMAGE_TAG       = "${env.BUILD_NUMBER}"
+        SECRET = credentials('SECRET')
+        MAIL_SECRET = credentials('MAIL_SECRET')
+        ACCOUNTS_CLIENT_SECRET = credentials('ACCOUNTS_CLIENT_SECRET')
+        FRONT_CLIENT_SECRET = credentials('FRONT_CLIENT_SECRET')
+        CASH_CLIENT_SECRET = credentials('CASH_CLIENT_SECRET')
+        TRANSFER_CLIENT_SECRET = credentials('TRANSFER_CLIENT_SECRET')
+        NOTIFICATIONS_CLIENT_SECRET = credentials('NOTIFICATIONS_CLIENT_SECRET')
+        IMAGE_TAG = 0.0.1
     }
 
     stages {
-        stage('Build & Unit Tests') {
+        stage('Build Services') {
             parallel {
-                stage('Customer Service') {
+                stage('Build Accounts') {
                     steps {
-                        dir('customer-service') {
-                            sh 'mvn clean test'
+                        dir('accounts') {
+                            sh 'docker build -t ${DOCKER_REGISTRY}/accounts:${IMAGE_TAG} .'
                         }
                     }
                 }
-                stage('Order Service') {
+                stage('Build Cash') {
                     steps {
-                        dir('order-service') {
-                            sh 'mvn clean test'
+                        dir('cash') {
+                            sh 'docker build -t ${DOCKER_REGISTRY}/cash:${IMAGE_TAG} .'
+                        }
+                    }
+                }
+                stage('Build Transfer') {
+                    steps {
+                        dir('transfer') {
+                            sh 'docker build -t ${DOCKER_REGISTRY}/transfer:${IMAGE_TAG} .'
+                        }
+                    }
+                }
+                stage('Build Notifications') {
+                    steps {
+                        dir('notifications') {
+                            sh 'docker build -t ${DOCKER_REGISTRY}/notifications:${IMAGE_TAG} .'
+                        }
+                    }
+                }
+                stage('Build Front') {
+                    steps {
+                        dir('front') {
+                            sh 'docker build -t ${DOCKER_REGISTRY}/front:${IMAGE_TAG} .'
                         }
                     }
                 }
             }
         }
 
-        stage('Build Docker Images') {
+        stage('Push Images') {
             steps {
-                sh """
-                docker build -t ${DOCKER_REGISTRY}/customer-service:${IMAGE_TAG} customer-service
-                docker build -t ${DOCKER_REGISTRY}/order-service:${IMAGE_TAG} order-service
-                """
+                script {
+                    withCredentials([string(credentialsId: 'GHCR_TOKEN', variable: 'GHCR_TOKEN')]) {
+                        sh """
+                            echo \$GHCR_TOKEN | docker login ghcr.io -u ${GITHUB_USERNAME} --password-stdin
+
+                            docker push ${DOCKER_REGISTRY}/accounts:${IMAGE_TAG}
+                            docker push ${DOCKER_REGISTRY}/cash:${IMAGE_TAG}
+                            docker push ${DOCKER_REGISTRY}/transfer:${IMAGE_TAG}
+                            docker push ${DOCKER_REGISTRY}/notifications:${IMAGE_TAG}
+                            docker push ${DOCKER_REGISTRY}/front:${IMAGE_TAG}
+                        """
+                    }
+                }
             }
         }
 
-        stage('Push Docker Images') {
+        stage('Update Dependencies') {
             steps {
-                withCredentials([string(credentialsId: 'GHCR_TOKEN', variable: 'GHCR_TOKEN')]) {
+                script {
+                    echo "Updating Helm dependencies..."
+                        sh """
+                            helm dependency update bankapp-chart
+                        """
+                }
+            }
+        }
+
+        stage('Create Secrets for TEST') {
+            steps {
+                script {
                     sh """
-                    echo \$GHCR_TOKEN | docker login ghcr.io -u ${GITHUB_USERNAME} --password-stdin
-                    docker push ${DOCKER_REGISTRY}/customer-service:${IMAGE_TAG}
-                    docker push ${DOCKER_REGISTRY}/order-service:${IMAGE_TAG}
-                    """
+                        kubectl create namespace test --dry-run=client -o yaml | kubectl apply -f -
+
+                        kubectl create secret generic accounts-secrets \
+                            --namespace=test \
+                            --from-literal=datasource-username=${SECRET} \
+                            --from-literal=datasource-password=${SECRET} \
+                            --from-literal=liquibase-user=${SECRET} \
+                            --from-literal=liquibase-password=${SECRET} \
+                            --from-literal=oauth2-client-secret=${ACCOUNTS_CLIENT_SECRET} \
+                            --dry-run=client -o yaml | kubectl apply -f -
+
+                        kubectl create secret generic cash-secrets \
+                            --namespace=test \
+                            --from-literal=oauth2-client-secret=${CASH_CLIENT_SECRET} \
+                            --dry-run=client -o yaml | kubectl apply -f -
+
+                        kubectl create secret generic transfer-secrets \
+                            --namespace=test \
+                            --from-literal=oauth2-client-secret=${TRANSFER_CLIENT_SECRET} \
+                            --dry-run=client -o yaml | kubectl apply -f -
+
+                        kubectl create secret generic notifications-secrets \
+                            --namespace=test \
+                            --from-literal=oauth2-client-secret=${NOTIFICATIONS_CLIENT_SECRET} \
+                            --from-literal=mail-password=${MAIL_SECRET} \
+                            --dry-run=client -o yaml | kubectl apply -f -
+
+                        kubectl create secret generic front-secrets \
+                            --namespace=test \
+                            --from-literal=oauth2-client-secret=${FRONT_CLIENT_SECRET} \
+                            --dry-run=client -o yaml | kubectl apply -f -
+
+                        kubectl create secret generic postgresql-secrets \
+                            --namespace=test \
+                            --from-literal=postgres-password=${SECRET} \
+                            --from-literal=password=${SECRET} \
+                            --dry-run=client -o yaml | kubectl apply -f -
+
+                        kubectl create secret generic keycloak-secrets \
+                            --namespace=test \
+                            --from-literal=postgres-password=${SECRET} \
+                            --from-literal=password=${SECRET} \
+                            --dry-run=client -o yaml | kubectl apply -f -
+                        """
+                    }
                 }
             }
         }
 
-        stage('Install PostgreSQL to TEST') {
+        stage('Deploy Umbrella Chart for TEST') {
             steps {
-                sh """
-                helm repo add bitnami https://charts.bitnami.com/bitnami
-                helm repo update
-
-                helm upgrade --install postgres bitnami/postgresql \\
-                  --namespace test --create-namespace \\
-                  --set auth.database=${DB_NAME} \\
-                  --set auth.username=${DB_USER} \\
-                  --set auth.password=${DB_PASSWORD}
-                """
-            }
-        }
-
-        stage('Create DB Secrets for TEST') {
-            steps {
-                sh """
-                kubectl create secret generic customer-service-customer-db \\
-                  --from-literal=password=${DB_PASSWORD} \\
-                  -n test --dry-run=client -o yaml | kubectl apply -f -
-
-                kubectl create secret generic order-service-order-db \\
-                  --from-literal=password=${DB_PASSWORD} \\
-                  -n test --dry-run=client -o yaml | kubectl apply -f -
-                """
-            }
-        }
-
-        stage('Helm Deploy to TEST') {
-            steps {
-                sh """
-                helm upgrade --install customer-service my-microservices-app/charts/customer-service \\
-                  --namespace test --create-namespace \\
-                  --set image.repository=${DOCKER_REGISTRY}/customer-service \\
-                  --set image.tag=${IMAGE_TAG} \\
-                  --set ingress.enabled=true \\
-                  --set ingress.hosts[0].host=customer.test.local \\
-                  --set ingress.hosts[0].paths[0].path="/" \\
-                  --set ingress.hosts[0].paths[0].pathType="ImplementationSpecific"
-
-                helm upgrade --install order-service my-microservices-app/charts/order-service \\
-                  --namespace test --create-namespace \\
-                  --set image.repository=${DOCKER_REGISTRY}/order-service \\
-                  --set image.tag=${IMAGE_TAG} \\
-                  --set ingress.enabled=true \\
-                  --set ingress.hosts[0].host=order.test.local \\
-                  --set ingress.hosts[0].paths[0].path="/" \\
-                  --set ingress.hosts[0].paths[0].pathType="ImplementationSpecific"
-                """
+                script {
+                    sh """
+                        helm upgrade --install bankapp . \
+                            --namespace test \
+                            --set accounts.image.repository=${DOCKER_REGISTRY}/accounts \
+                            --set accounts.image.tag=${IMAGE_TAG} \
+                            --set cash.image.repository=${DOCKER_REGISTRY}/cash \
+                            --set cash.image.tag=${IMAGE_TAG} \
+                            --set transfer.image.repository=${DOCKER_REGISTRY}/transfer \
+                            --set transfer.image.tag=${IMAGE_TAG} \
+                            --set notifications.image.repository=${DOCKER_REGISTRY}/notifications \
+                            --set notifications.image.tag=${IMAGE_TAG} \
+                            --set front.image.repository=${DOCKER_REGISTRY}/front \
+                            --set front.image.tag=${IMAGE_TAG} \
+                            --wait \
+                            --timeout 600s
+                    """
+                    }
+                }
             }
         }
 
@@ -110,53 +168,90 @@ pipeline {
             }
         }
 
-        stage('Install PostgreSQL to PROD') {
+        stage('Create Secrets for PROD') {
             steps {
-                sh """
-                helm upgrade --install postgres bitnami/postgresql \\
-                  --namespace prod --create-namespace \\
-                  --set auth.database=${DB_NAME} \\
-                  --set auth.username=${DB_USER} \\
-                  --set auth.password=${DB_PASSWORD}
-                """
+                script {
+                    sh """
+                        kubectl create namespace prod
+
+                        kubectl create secret generic accounts-secrets \
+                            --namespace=prod \
+                            --from-literal=datasource-username=${SECRET} \
+                            --from-literal=datasource-password=${SECRET} \
+                            --from-literal=liquibase-user=${SECRET} \
+                            --from-literal=liquibase-password=${SECRET} \
+                            --from-literal=oauth2-client-secret=${ACCOUNTS_CLIENT_SECRET}
+
+                        kubectl create secret generic cash-secrets \
+                            --namespace=prod \
+                            --from-literal=oauth2-client-secret=${CASH_CLIENT_SECRET}
+
+                        kubectl create secret generic transfer-secrets \
+                            --namespace=prod \
+                            --from-literal=oauth2-client-secret=${TRANSFER_CLIENT_SECRET}
+
+                        kubectl create secret generic notifications-secrets \
+                            --namespace=prod \
+                            --from-literal=oauth2-client-secret=${NOTIFICATIONS_CLIENT_SECRET}
+
+                        kubectl create secret generic front-secrets \
+                            --namespace=prod \
+                            --from-literal=oauth2-client-secret=${FRONT_CLIENT_SECRET}
+
+                        kubectl create secret generic postgresql-secrets \
+                            --namespace=prod \
+                            --from-literal=postgres-password=${SECRET} \
+                            --from-literal=password=${SECRET}
+
+                        kubectl create secret generic keycloak-secrets \
+                            --namespace=prod \
+                            --from-literal=postgres-password=${SECRET} \
+                            --from-literal=password=${SECRET}
+                        """
+                    }
+                }
             }
         }
 
-        stage('Create DB Secrets for PROD') {
+        stage('Deploy Umbrella Chart for PROD') {
             steps {
-                sh """
-                kubectl create secret generic customer-service-customer-db \\
-                  --from-literal=password=${DB_PASSWORD} \\
-                  -n prod --dry-run=client -o yaml | kubectl apply -f -
-
-                kubectl create secret generic order-service-order-db \\
-                  --from-literal=password=${DB_PASSWORD} \\
-                  -n prod --dry-run=client -o yaml | kubectl apply -f -
-                """
+                script {
+                    sh """
+                        helm upgrade --install bankapp . \
+                            --namespace prod \
+                            --set accounts.image.repository=${DOCKER_REGISTRY}/accounts \
+                            --set accounts.image.tag=${IMAGE_TAG} \
+                            --set cash.image.repository=${DOCKER_REGISTRY}/cash \
+                            --set cash.image.tag=${IMAGE_TAG} \
+                            --set transfer.image.repository=${DOCKER_REGISTRY}/transfer \
+                            --set transfer.image.tag=${IMAGE_TAG} \
+                            --set notifications.image.repository=${DOCKER_REGISTRY}/notifications \
+                            --set notifications.image.tag=${IMAGE_TAG} \
+                            --set front.image.repository=${DOCKER_REGISTRY}/front \
+                            --set front.image.tag=${IMAGE_TAG} \
+                            --wait \
+                            --timeout 600s
+                    """
+                    }
+                }
             }
         }
+    }
 
-        stage('Helm Deploy to PROD') {
-            steps {
-                sh """
-                helm upgrade --install customer-service my-microservices-app/charts/customer-service \\
-                  --namespace prod --create-namespace \\
-                  --set image.repository=${DOCKER_REGISTRY}/customer-service \\
-                  --set image.tag=${IMAGE_TAG} \\
-                  --set ingress.enabled=true \\
-                  --set ingress.hosts[0].host=customer.prod.local \\
-                  --set ingress.hosts[0].paths[0].path="/" \\
-                  --set ingress.hosts[0].paths[0].pathType="ImplementationSpecific"
-
-                helm upgrade --install order-service my-microservices-app/charts/order-service \\
-                  --namespace prod --create-namespace \\
-                  --set image.repository=${DOCKER_REGISTRY}/order-service \\
-                  --set image.tag=${IMAGE_TAG} \\
-                  --set ingress.enabled=true \\
-                  --set ingress.hosts[0].host=order.prod.local \\
-                  --set ingress.hosts[0].paths[0].path="/" \\
-                  --set ingress.hosts[0].paths[0].pathType="ImplementationSpecific"
-                """
+    post {
+        success {
+            script {
+                echo "BankApp deployment completed successfully!"
+            }
+        }
+        failure {
+            script {
+                echo "BankApp deployment failed!"
+            }
+        }
+        cleanup {
+            script {
+                cleanWs()
             }
         }
     }

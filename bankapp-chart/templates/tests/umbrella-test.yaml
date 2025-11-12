@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ .Release.Name }}-umbrella-test"
+  labels:
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: simple-check
+      image: busybox:latest
+      command: ['sh', '-c']
+      args:
+        - |
+          set -ex
+          echo "Start"
+          for service in accounts cash transfer notifications front keycloak db; do
+            nslookup $service && echo "$service DNS OK" || echo "✗ $service DNS FAILED"
+          done
+          echo "Finish"
+  restartPolicy: Never

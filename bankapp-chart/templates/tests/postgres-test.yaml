@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ .Release.Name }}-postgres-test"
+  labels:
+    app.kubernetes.io/name: bankapp-umbrella
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+  annotations:
+    "helm.sh/hook": test
+    "helm.sh/hook-weight": "-3"
+spec:
+  containers:
+    - name: postgres-test
+      image: 17-alpine
+      env:
+        - name: PGHOST
+          value: "db"
+        - name: PGPORT
+          value: "5432"
+        - name: PGDATABASE
+          value: "bankapp"
+        - name: PGUSER
+          value: "bankapp"
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgresql-secrets
+              key: password
+      command: ['sh', '-c']
+      args:
+        - |
+          set -ex
+          echo "Start"
+          until pg_isready -h db -p 5432 -U bankapp -d bankapp; do
+            sleep 2
+          done
+          psql -c "SELECT version();"
+          echo "Database is up"
+          echo "Finnish"
+  restartPolicy: Never

@@ -74,6 +74,12 @@ subprojects {
 	if (project.name in ['front', 'cash', 'transfer', 'notifications', 'accounts-serv']) {
 		bootJar {
 			enabled = true
+			if (project.name == 'accounts-serv') {
+				archiveFileName = "accounts.jar"
+			}
+			else {
+				archiveFileName = "${project.name}.jar"
+			}
 		}
 	}
 
