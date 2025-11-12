@@ -14,5 +14,6 @@ services:
       - jenkins_home:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock
       - ${KUBECONFIG_PATH}:/root/.kube/config
+      - ./init.groovy.d/:/var/jenkins_home/init.groovy.d
 volumes:
   jenkins_home:

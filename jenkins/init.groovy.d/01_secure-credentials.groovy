@@ -21,6 +21,7 @@ def notifications_secret = env['NOTIFICATIONS_CLIENT_SECRET']
 
 def store = Jenkins.instance.getExtensionList('com.cloudbees.plugins.credentials.SystemCredentialsProvider')[0].getStore()
 
+println "--> Запуск 01_secure-credentionals"
 if (githubUsername && githubToken) {
     println "--> Creating credential: github-creds (username + token)"
     def githubCreds = new UsernamePasswordCredentialsImpl(
