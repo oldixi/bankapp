@@ -69,8 +69,14 @@ autoscaling:
   maxReplicas: 100
   targetCPUUtilizationPercentage: 80
 
-volumes: []
-volumeMounts: []
+volumes:
+  - name: config-volume
+    configMap:
+      name: accounts
+volumeMounts:
+  - name: config-volume
+    mountPath: /app/config
+    readOnly: true
 nodeSelector: {}
 
 tolerations: []
@@ -79,7 +85,7 @@ affinity: {}
 
 rules:
   - apiGroups: [""]
-    resources: ["endpoints", "services", "pods"]
+    resources: ["endpoints", "services", "pods", "configmaps"]
     verbs: ["get", "list", "watch"]
 
 config:

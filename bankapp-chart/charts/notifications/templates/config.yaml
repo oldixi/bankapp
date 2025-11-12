@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: notifications-config
+  name: notifications
 data:
   application.yaml: |
     server:

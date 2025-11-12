@@ -43,39 +43,37 @@ spec:
             - name: http
               containerPort: {{ .Values.service.port }}
               protocol: TCP
-          volumeMounts:
-            - name: config-volume
-              mountPath: /app/config
-              readOnly: true
           env:
             - name: SPRING_CONFIG_LOCATION
               value: "classpath:/,file:/app/config/application.yaml"
             - name: SPRING_CONFIG_ADDITIONAL_LOCATION
               value: "file:/app/config/"
+            - name: SPRING_AUTOCONFIGURE_EXCLUDE
+              value: "org.keycloak.adapters.springboot.KeycloakAutoConfiguration,org.keycloak.adapters.springboot.KeycloakSpringBootProperties"
             - name: SPRING_DATASOURCE_USERNAME
               valueFrom:
                 secretKeyRef:
-                  name: accounts-secret
+                  name: {{ .Values.secrets.name }}
                   key: datasource-username
             - name: SPRING_DATASOURCE_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: accounts-secret
+                  name: {{ .Values.secrets.name }}
                   key: datasource-password
             - name: SPRING_LIQUIBASE_USER
               valueFrom:
                 secretKeyRef:
-                  name: accounts-secret
+                  name: {{ .Values.secrets.name }}
                   key: liquibase-user
             - name: SPRING_LIQUIBASE_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: accounts-secret
+                  name: {{ .Values.secrets.name }}
                   key: liquibase-password
             - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAK_CLIENT_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: accounts-secret
+                  name: {{ .Values.secrets.name }}
                   key: oauth2-client-secret
           {{- with .Values.livenessProbe }}
           livenessProbe:
@@ -109,7 +107,3 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      volumes:
-        - name: config-volume
-          configMap:
-            name: {{ include "accounts.fullname" . }}

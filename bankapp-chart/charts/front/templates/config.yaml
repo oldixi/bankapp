@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: front-config
+  name: front
 data:
   application.yaml: |
     server:

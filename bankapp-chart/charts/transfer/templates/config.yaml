@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: transfer-config
+  name: transfer
 data:
   application.yaml: |
     server:

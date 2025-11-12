@@ -1,8 +1,0 @@
-apiVersion: v2
-name: keycloak
-description: A Helm chart for Kubernetes
-version: 0.1.0
-dependencies:
-  - name: keycloak
-    version: 25.2.0
-    repository: https://raw.githubusercontent.com/bitnami/charts/refs/heads/archive-full-index/bitnami/

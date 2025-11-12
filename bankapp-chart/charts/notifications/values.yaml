@@ -2,6 +2,9 @@ global:
   namespace: bankapp
 replicaCount: 1
 
+secrets:
+  name: notifications-secrets
+
 image:
   repository: bankapp/notifications
   pullPolicy: IfNotPresent
@@ -69,7 +72,7 @@ autoscaling:
 volumes:
   - name: config-volume
     configMap:
-      name: notifications-config
+      name: notifications
 volumeMounts:
   - name: config-volume
     mountPath: /app/config

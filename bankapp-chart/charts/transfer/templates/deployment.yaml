@@ -45,14 +45,15 @@ spec:
             - name: http
               containerPort: {{ .Values.service.port }}
               protocol: TCP
-          envFrom:
-            - configMapRef:
-                name: {{ include "transfer.fullname" . }}
           env:
+            - name: SPRING_CONFIG_LOCATION
+              value: "classpath:/,file:/app/config/application.yaml"
+            - name: SPRING_CONFIG_ADDITIONAL_LOCATION
+              value: "file:/app/config/"
             - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAK_CLIENT_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: transfer-secrets
+                  name: {{ .Values.secrets.name }}
                   key: oauth2-client-secret
           {{- with .Values.livenessProbe }}
           livenessProbe:

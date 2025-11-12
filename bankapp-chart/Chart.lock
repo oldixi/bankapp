@@ -1,0 +1,27 @@
+dependencies:
+- name: keycloak
+  repository: https://raw.githubusercontent.com/bitnami/charts/refs/heads/archive-full-index/bitnami/
+  version: 25.2.0
+- name: postgresql
+  repository: https://raw.githubusercontent.com/bitnami/charts/refs/heads/archive-full-index/bitnami/
+  version: 18.1.8
+- name: accounts
+  repository: file://./charts/accounts
+  version: 0.1.0
+- name: cash
+  repository: file://./charts/cash
+  version: 0.1.0
+- name: transfer
+  repository: file://./charts/transfer
+  version: 0.1.0
+- name: notifications
+  repository: file://./charts/notifications
+  version: 0.1.0
+- name: front
+  repository: file://./charts/front
+  version: 0.1.0
+- name: common
+  repository: file://./charts/common
+  version: 0.1.0
+digest: sha256:c8f34653a3394735048b488c34a65a6cd943c809002bfac558e2b8694983fd62
+generated: "2025-11-12T10:07:13.046823+03:00"

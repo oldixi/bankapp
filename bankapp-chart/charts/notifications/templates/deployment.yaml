@@ -52,12 +52,12 @@ spec:
             - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAK_CLIENT_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: notifications-secrets
+                  name: {{ .Values.secrets.name }}
                   key: oauth2-client-secret
             - name: SPRING_MAIL_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: notifications-secrets
+                  name: {{ .Values.secrets.name }}
                   key: mail-password
           {{- with .Values.livenessProbe }}
           livenessProbe:

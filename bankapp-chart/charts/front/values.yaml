@@ -2,6 +2,9 @@ global:
   namespace: bankapp
 replicaCount: 1
 
+secrets:
+  name: front-secrets
+
 image:
   repository: bankapp/front
   pullPolicy: IfNotPresent
@@ -34,11 +37,18 @@ ingress:
   annotations:
     kubernetes.io/ingress.class: nginx
     nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
   hosts:
     - host: front.local
       paths:
         - path: /
-          pathType: ImplementationSpecific
+          pathType: Prefix
+          backend:
+            service:
+              name: front
+              port:
+                number: 8086
   tls: []
 
 httpRoute:
@@ -57,14 +67,13 @@ httpRoute:
 
 resources: {}
 
-livenessProbe:
-  httpGet:
-    path: /
-    port: http
-readinessProbe:
-  httpGet:
-    path: /
-    port: http
+livenessProbe: {}
+readinessProbe: {}
+
+rules:
+  - apiGroups: [""]
+    resources: ["endpoints", "services", "pods", "configmaps"]
+    verbs: ["get", "list", "watch"]
 
 autoscaling:
   enabled: false
@@ -72,8 +81,14 @@ autoscaling:
   maxReplicas: 100
   targetCPUUtilizationPercentage: 80
 
-volumes: []
-volumeMounts: []
+volumes:
+  - name: config-volume
+    configMap:
+      name: front
+volumeMounts:
+  - name: config-volume
+    mountPath: /app/config
+    readOnly: true
 nodeSelector: {}
 
 tolerations: []
