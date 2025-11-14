@@ -8,11 +8,18 @@ dependencies:
   - name: keycloak
     version: 25.2.0
     repository: https://raw.githubusercontent.com/bitnami/charts/refs/heads/archive-full-index/bitnami/
+    alias: keycloak
     condition: keycloak.enabled
   - name: postgresql
     version: 18.1.8
     repository: https://raw.githubusercontent.com/bitnami/charts/refs/heads/archive-full-index/bitnami/
+    alias: postgresql
     condition: postgresql.enabled
+  - name: kafka
+    version: 32.4.3
+    repository: https://raw.githubusercontent.com/bitnami/charts/refs/heads/archive-full-index/bitnami/
+    alias: kafka
+    condition: kafka.enabled
   - name: accounts
     version: 0.1.0
     repository: "file://./charts/accounts"

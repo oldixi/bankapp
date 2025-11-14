@@ -1,5 +1,24 @@
 spring:
-  main:
-    web-application-type: servlet
   application:
     name: notifications
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.add.type.headers: false
+    consumer:
+      group-id: test-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+        spring.json.value.default.type: ru.yandex.notifications.config.BankappMsg
+        interceptor.classes: ru.yandex.notifications.config.KafkaLoggingInterceptor
+logging:
+  level:
+    org.springframework.cloud.contract: debug
+    ru.yandex.notifications.kafka: DEBUG
+    org.springframework.kafka: DEBUG

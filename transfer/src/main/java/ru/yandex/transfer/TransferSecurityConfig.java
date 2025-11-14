@@ -24,6 +24,7 @@ public class TransferSecurityConfig {
                 .oauth2Client(Customizer.withDefaults())
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
                 .authorizeHttpRequests(authz -> authz
+                        .requestMatchers("/actuator/health", "/actuator/health/**", "/actuator/info", "/actuator/metrics").permitAll()
                         .anyRequest().authenticated())
                 .csrf(AbstractHttpConfigurer::disable);
         return http.build();

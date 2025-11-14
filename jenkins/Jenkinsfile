@@ -17,38 +17,45 @@ pipeline {
 
     stages {
         stage('Build Services') {
+            stage('bootJar') {
+                steps {
+                    dir('bankapp') {
+                        sh './gradlew bootJar'
+                    }
+                }
+            }
             parallel {
                 stage('Build Accounts') {
                     steps {
-                        dir('accounts') {
+                        dir('bankapp') {
                             sh 'docker build -t ${DOCKER_REGISTRY}/accounts:${IMAGE_TAG} .'
                         }
                     }
                 }
                 stage('Build Cash') {
                     steps {
-                        dir('cash') {
+                        dir('bankapp') {
                             sh 'docker build -t ${DOCKER_REGISTRY}/cash:${IMAGE_TAG} .'
                         }
                     }
                 }
                 stage('Build Transfer') {
                     steps {
-                        dir('transfer') {
+                        dir('bankapp') {
                             sh 'docker build -t ${DOCKER_REGISTRY}/transfer:${IMAGE_TAG} .'
                         }
                     }
                 }
                 stage('Build Notifications') {
                     steps {
-                        dir('notifications') {
+                        dir('bankapp') {
                             sh 'docker build -t ${DOCKER_REGISTRY}/notifications:${IMAGE_TAG} .'
                         }
                     }
                 }
                 stage('Build Front') {
                     steps {
-                        dir('front') {
+                        dir('bankapp') {
                             sh 'docker build -t ${DOCKER_REGISTRY}/front:${IMAGE_TAG} .'
                         }
                     }
@@ -132,6 +139,15 @@ pipeline {
                             --from-literal=postgres-password=${SECRET} \
                             --from-literal=password=${SECRET} \
                             --dry-run=client -o yaml | kubectl apply -f -
+
+                        kubectl create secret generic kafka-secrets \
+                          --namespace=bankapp \
+                          --from-literal=cluster-id=${SECRET} \
+                          --from-literal=controller-0-id=0 \
+                          --from-literal=client-passwords=${SECRET} \
+                          --from-literal=inter-broker-password=${SECRET} \
+                          --from-literal=controller-password=${SECRET} \
+                          --dry-run=client -o yaml | kubectl apply -f -
                         """
                     }
                 }

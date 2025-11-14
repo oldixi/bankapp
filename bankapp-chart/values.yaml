@@ -191,3 +191,66 @@ keycloak:
   nodeSelector: { }
   tolerations: [ ]
   affinity: { }
+
+kafka:
+  enabled: true
+  replicaCount: 1
+  fullnameOverride: kafka
+  image:
+    registry: docker.io
+    repository: bitnamilegacy/kafka
+    tag: "4.0.0-debian-12-r10"
+    pullPolicy: IfNotPresent
+  auth:
+    interBrokerProtocol: "plaintext"
+  listeners:
+    client:
+      protocol: "PLAINTEXT"
+  kraft:
+    enabled: true
+  controller:
+    replicaCount: 1
+    controllerOnly: false
+    minId: 0
+    heapOpts: -Xmx512M -Xms512M
+  broker:
+    replicaCount: 0
+  resources:
+    requests:
+      memory: "1Gi"
+      cpu: "500m"
+    limits:
+      memory: "2Gi"
+      cpu: "1000m"
+  persistence:
+    enabled: true
+    size: 1Gi
+  clusterId: "bankapp"
+  existingKraftSecret: "kafka-secrets"
+  kraftVersion: 1
+  service:
+    type: ClusterIP
+    ports:
+      client: 9092
+  sasl:
+    enabledMechanisms: "PLAIN"
+    interBrokerMechanism: "PLAIN"
+    controllerMechanism: "PLAIN"
+    interbroker:
+      user: "inter_broker_user"
+      password: ""
+    controller:
+      user: "controller_user"
+      password: ""
+    client:
+      users:
+        - "user1"
+      passwords: ""
+    auth:
+      clientProtocol: "plaintext"
+      interBrokerProtocol: "plaintext"
+      controllerProtocol: "plaintext"
+    livenessProbe:
+      enabled: false
+    readinessProbe:
+      enabled: false

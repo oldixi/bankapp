@@ -78,6 +78,80 @@
 * Возможно запустить каждый сервис по-отдельности (в таком случае следует не забыть развернуть сервис keycloak и postgres -см. зависимости)<br>
 * Все приложение можно развернуть с помощью зонтичного чарта.
 
+Для этого необходимо:
+* получить образы сервисов
+```bash
+./gradlew bootJar
+docker build -f notifications/Dockerfile -t notifications .
+docker build -f accounts/Dockerfile -t accounts .
+docker build -f cash/Dockerfile -t cash .
+docker build -f transfer/Dockerfile -t transfer .
+docker build -f front/Dockerfile -t front .
+```
+* скачать зависимости (для postgresql, keycloak и kafka)
+```bash
+cd bankapp-chart
+helm dependency build
+```
+* создать секреты в Kubernetis (в примере пространство имен bankapp)
+```bash
+kubectl create secret generic accounts-secrets \
+  --namespace=bankapp \
+  --from-literal=datasource-username=bankapp \
+  --from-literal=datasource-password=bankapp \
+  --from-literal=liquibase-user=bankapp \
+  --from-literal=liquibase-password=bankapp \
+  --from-literal=oauth2-client-secret=vRBqHqy5rIgQjqHLk4ntrFMflfZZ1V5Y \
+  --dry-run=client -o yaml | kubectl apply -f -
+
+kubectl create secret generic cash-secrets \
+  --namespace=bankapp \
+  --from-literal=oauth2-client-secret=VKgaEyKXFsc5QJJrtDolB2Luv7KyeXth \
+  --dry-run=client -o yaml | kubectl apply -f -
+
+kubectl create secret generic transfer-secrets \
+  --namespace=bankapp \
+  --from-literal=oauth2-client-secret=tFVIAzOu86RAkgbIzmZgEkeCoOYk74w1 \
+  --dry-run=client -o yaml | kubectl apply -f -
+
+kubectl create secret generic notifications-secrets \
+  --namespace=bankapp \
+  --from-literal=oauth2-client-secret=zwNU03EpVjSvqo7UpsJdghw6v0EVe0hC \
+  --from-literal=mail-password=irwlzrzewdogocpw \
+  --dry-run=client -o yaml | kubectl apply -f -
+
+kubectl create secret generic front-secrets \
+  --namespace=bankapp \
+  --from-literal=oauth2-client-secret=moY8OTX4GbDI5AwmholMgAXT0aJDCSpf \
+  --dry-run=client -o yaml | kubectl apply -f -
+
+kubectl create secret generic postgresql-secrets \
+  --namespace=bankapp \
+--from-literal=postgres-password=bankapp \
+  --from-literal=password=bankapp \
+  --dry-run=client -o yaml | kubectl apply -f -
+
+kubectl create secret generic keycloak-secrets \
+  --namespace=bankapp \
+  --from-literal=postgres-password=bankapp \
+  --from-literal=password=bankapp \
+  --dry-run=client -o yaml | kubectl apply -f -
+  
+kubectl create secret generic kafka-secrets \
+  --namespace=bankapp \
+  --from-literal=cluster-id=bankapp \
+  --from-literal=controller-0-id=0 \
+  --from-literal=client-passwords=bankapp \
+  --from-literal=inter-broker-password=bankapp \
+  --from-literal=controller-password=bankapp \
+  --dry-run=client -o yaml | kubectl apply -f -  
+```
+
+* установить чарт (в примере пространство имен bankapp)
+```bash
+helm upgrade --install bankapp . -n bankapp
+```
+
 Вход приложения осуществляется по адресу:<br>
 http://bankapp/login
 

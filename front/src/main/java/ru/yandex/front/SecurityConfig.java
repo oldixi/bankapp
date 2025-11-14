@@ -33,7 +33,7 @@ public class SecurityConfig {
                 .oauth2Login(AbstractHttpConfigurer::disable)
                 .oauth2Client(Customizer.withDefaults())
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/actuator/health").permitAll()
+                        .requestMatchers("/actuator/health", "/actuator/health/**", "/actuator/info", "/actuator/metrics").permitAll()
                         .requestMatchers("/login", "/signup").permitAll()
                         .anyRequest().authenticated())
                 .formLogin(log -> log
