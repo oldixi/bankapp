@@ -121,6 +121,7 @@ subprojects {
 			implementation 'org.aspectj:aspectjweaver'
 			implementation 'org.springframework.boot:spring-boot-starter-web'
 			implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+			implementation 'org.springframework.kafka:spring-kafka'
 			implementation 'jakarta.servlet:jakarta.servlet-api:6.0.0'
 			implementation 'org.liquibase:liquibase-core'
 			implementation 'org.postgresql:postgresql'
@@ -128,12 +129,14 @@ subprojects {
 			implementation project(':accounts:accounts-dto')
 			testImplementation 'org.springframework.cloud:spring-cloud-starter-contract-stub-runner'
 			testImplementation 'org.springframework.cloud:spring-cloud-starter-contract-verifier'
+			testImplementation 'org.springframework.kafka:spring-kafka-test'
 		}
 
 		if (project.name == 'accounts:account-serv') {
 			implementation 'org.aspectj:aspectjweaver'
 			implementation 'org.springframework.boot:spring-boot-starter-web'
 			implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+			implementation 'org.springframework.kafka:spring-kafka'
 			implementation 'jakarta.servlet:jakarta.servlet-api:6.0.0'
 			implementation 'org.liquibase:liquibase-core'
 			implementation 'org.postgresql:postgresql'
@@ -141,12 +144,14 @@ subprojects {
 			implementation project(':accounts:accounts-dto')
 			testImplementation 'org.springframework.cloud:spring-cloud-starter-contract-stub-runner'
 			testImplementation 'org.springframework.cloud:spring-cloud-starter-contract-verifier'
+			testImplementation 'org.springframework.kafka:spring-kafka-test'
 		}
 
 		if (project.name == 'accounts') {
 			implementation 'org.aspectj:aspectjweaver'
 			implementation 'org.springframework.boot:spring-boot-starter-web'
 			implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+			implementation 'org.springframework.kafka:spring-kafka'
 			implementation 'jakarta.servlet:jakarta.servlet-api:6.0.0'
 			implementation 'org.liquibase:liquibase-core'
 			implementation 'org.postgresql:postgresql'
@@ -154,13 +159,17 @@ subprojects {
 			implementation project(':accounts:accounts-dto')
 			testImplementation 'org.springframework.cloud:spring-cloud-starter-contract-stub-runner'
 			testImplementation 'org.springframework.cloud:spring-cloud-starter-contract-verifier'
+			testImplementation 'org.springframework.kafka:spring-kafka-test'
 		}
 
 		if (project.name == 'notifications') {
 			implementation 'org.springframework.boot:spring-boot-starter-web'
 			implementation 'org.springframework.boot:spring-boot-starter-mail'
+			implementation 'org.springframework.kafka:spring-kafka'
+			implementation project(':accounts:accounts-dto')
 			testImplementation 'org.springframework.cloud:spring-cloud-starter-contract-verifier'
 			testImplementation 'org.springframework.cloud:spring-cloud-contract-wiremock'
+			testImplementation 'org.springframework.kafka:spring-kafka-test'
 		}
 
 		if (project.name == 'cash') {

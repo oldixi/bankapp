@@ -1,0 +1,442 @@
+Release "notifications" has been upgraded. Happy Helming!
+NAME: notifications
+LAST DEPLOYED: Mon Nov 10 19:10:15 2025
+NAMESPACE: bankapp
+STATUS: deployed
+REVISION: 2
+USER-SUPPLIED VALUES:
+affinity: {}
+autoscaling:
+  enabled: false
+  maxReplicas: 100
+  minReplicas: 1
+  targetCPUUtilizationPercentage: 80
+config:
+  server:
+    port: 8085
+  spring:
+    application:
+      name: notifications
+    mail:
+      host: smtp.yandex.ru
+      port: 465
+      properties:
+        mail:
+          smtp:
+            auth: true
+            socketFactory:
+              class: javax.net.ssl.SSLSocketFactory
+              fallback: false
+              port: 465
+            ssl:
+              enable: true
+            starttls:
+              enable: false
+      protocol: smtps
+      username: app.oldixi@yandex.ru
+    security:
+      oauth2:
+        client:
+          registration:
+            keycloak:
+              clientId: notifications
+fullnameOverride: ""
+global:
+  namespace: bankapp
+httpRoute:
+  annotations: {}
+  enabled: false
+  hostnames:
+  - notifications.local
+  parentRefs:
+  - name: gateway
+    sectionName: http
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /headers
+image:
+  pullPolicy: IfNotPresent
+  repository: bankapp/notifications
+  tag: 0.0.1
+imagePullSecrets: []
+ingress:
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/backend-protocol: HTTP
+  className: nginx
+  enabled: true
+  hosts:
+  - host: notifications.local
+    paths:
+    - path: /
+      pathType: ImplementationSpecific
+  tls: []
+livenessProbe:
+  httpGet:
+    path: /
+    port: http
+nameOverride: ""
+nodeSelector: {}
+podAnnotations: {}
+podLabels: {}
+podSecurityContext: {}
+readinessProbe:
+  httpGet:
+    path: /
+    port: http
+replicaCount: 1
+resources: {}
+securityContext: {}
+service:
+  port: 8085
+  type: ClusterIP
+serviceAccount:
+  annotations: {}
+  automount: true
+  create: true
+  name: ""
+tolerations: []
+volumeMounts: []
+volumes: []
+
+COMPUTED VALUES:
+affinity: {}
+autoscaling:
+  enabled: false
+  maxReplicas: 100
+  minReplicas: 1
+  targetCPUUtilizationPercentage: 80
+common:
+  global:
+    feign:
+      circuitbreaker:
+        enabled: true
+      config:
+        default:
+          retryer: feign.Retryer.Default
+    ingress:
+      className: nginx
+      enabled: true
+      host: bankapp.local
+    namespace: bankapp
+    spring:
+      security:
+        oauth2:
+          client:
+            provider:
+              keycloak:
+                issuerUri: http://keycloak/realms/bankapp
+            registration:
+              keycloak:
+                authorizationGrantType: client_credentials
+                clientAuthenticationMethod: client_secret_basic
+                provider: keycloak
+                scope: openid,profile,email
+          resourceserver:
+            jwt:
+              issuerUri: http://keycloak/realms/bankapp
+              jwkSetUri: http://keycloak:80/realms/bankapp/protocol/openid-connect/certs
+  replicaCount: 1
+config:
+  server:
+    port: 8085
+  spring:
+    application:
+      name: notifications
+    mail:
+      host: smtp.yandex.ru
+      port: 465
+      properties:
+        mail:
+          smtp:
+            auth: true
+            socketFactory:
+              class: javax.net.ssl.SSLSocketFactory
+              fallback: false
+              port: 465
+            ssl:
+              enable: true
+            starttls:
+              enable: false
+      protocol: smtps
+      username: app.oldixi@yandex.ru
+    security:
+      oauth2:
+        client:
+          registration:
+            keycloak:
+              clientId: notifications
+fullnameOverride: ""
+global:
+  namespace: bankapp
+httpRoute:
+  annotations: {}
+  enabled: false
+  hostnames:
+  - notifications.local
+  parentRefs:
+  - name: gateway
+    sectionName: http
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /headers
+image:
+  pullPolicy: IfNotPresent
+  repository: bankapp/notifications
+  tag: 0.0.1
+imagePullSecrets: []
+ingress:
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/backend-protocol: HTTP
+  className: nginx
+  enabled: true
+  hosts:
+  - host: notifications.local
+    paths:
+    - path: /
+      pathType: ImplementationSpecific
+  tls: []
+livenessProbe:
+  httpGet:
+    path: /
+    port: http
+nameOverride: ""
+nodeSelector: {}
+podAnnotations: {}
+podLabels: {}
+podSecurityContext: {}
+readinessProbe:
+  httpGet:
+    path: /
+    port: http
+replicaCount: 1
+resources: {}
+securityContext: {}
+service:
+  port: 8085
+  type: ClusterIP
+serviceAccount:
+  annotations: {}
+  automount: true
+  create: true
+  name: ""
+tolerations: []
+volumeMounts: []
+volumes: []
+
+HOOKS:
+---
+# Source: notifications/templates/tests/test-connection.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "notifications-test-connection"
+  labels:
+    helm.sh/chart: notifications-0.1.0
+    app.kubernetes.io/name: notifications
+    app.kubernetes.io/instance: notifications
+    app.kubernetes.io/version: "1.0.1"
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['wget']
+      args: ['notifications:8085']
+  restartPolicy: Never
+MANIFEST:
+---
+# Source: notifications/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: notifications
+  namespace: bankapp
+  labels:
+    helm.sh/chart: notifications-0.1.0
+    app.kubernetes.io/name: notifications
+    app.kubernetes.io/instance: notifications
+    app.kubernetes.io/version: "1.0.1"
+    app.kubernetes.io/managed-by: Helm
+---
+# Source: notifications/templates/config.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: notifications-config
+data:
+  application.yaml: |
+    server:
+      port: 8085
+    spring:
+      application:
+        name: notifications
+      security:
+        oauth2:
+          client:
+            registration:
+              keycloak:
+                clientId: notifications
+                provider: keycloak
+                authorizationGrantType: client_credentials
+                scope: openid,profile,email
+                clientAuthenticationMethod: client_secret_basic
+            provider:
+              keycloak:
+                issuerUri: http://keycloak/realms/bankapp
+          resourceserver:
+            jwt:
+              issuerUri: http://keycloak/realms/bankapp
+              jwkSetUri: http://keycloak:80/realms/bankapp/protocol/openid-connect/certs
+      mail:
+        host: smtp.yandex.ru
+        port: 465
+        protocol: smtps
+        username: app.oldixi@yandex.ru
+        properties:
+          mail:
+            smtp:
+              auth: true
+              ssl:
+                enable: true
+              starttls:
+                enable: false
+              socketFactory:
+                port: 465
+                class: javax.net.ssl.SSLSocketFactory
+                fallback: false
+    feign:
+      circuitbreaker:
+        enabled: true
+      config:
+        default:
+          retryer: feign.Retryer.Default
+---
+# Source: notifications/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: notifications
+  namespace: bankapp
+  labels:
+    helm.sh/chart: notifications-0.1.0
+    app.kubernetes.io/name: notifications
+    app.kubernetes.io/instance: notifications
+    app.kubernetes.io/version: "1.0.1"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8085
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: notifications
+    app.kubernetes.io/instance: notifications
+---
+# Source: notifications/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notifications
+  namespace: bankapp
+  labels:
+    helm.sh/chart: notifications-0.1.0
+    app.kubernetes.io/name: notifications
+    app.kubernetes.io/instance: notifications
+    app.kubernetes.io/version: "1.0.1"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: notifications
+      app.kubernetes.io/instance: notifications
+  template:
+    metadata:
+      labels:
+        helm.sh/chart: notifications-0.1.0
+        app.kubernetes.io/name: notifications
+        app.kubernetes.io/instance: notifications
+        app.kubernetes.io/version: "1.0.1"
+        app.kubernetes.io/managed-by: Helm
+    spec:
+      serviceAccountName: notifications
+      containers:
+        - name: notifications
+          image: "bankapp/notifications:0.0.1"
+          ports:
+            - name: http
+              containerPort: 8085
+              protocol: TCP
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/config
+              readOnly: true
+          env:
+            - name: SPRING_CONFIG_LOCATION
+              value: "classpath:/,file:/app/config/application.yaml"
+            - name: SPRING_CONFIG_ADDITIONAL_LOCATION
+              value: "file:/app/config/"
+            - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAK_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: notifications-secrets
+                  key: oauth2-client-secret
+            - name: SPRING_MAIL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: notifications-secrets
+                  key: mail-password
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+      volumes:
+        - name: config-volume
+          configMap:
+            name: notifications-config
+---
+# Source: notifications/templates/ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: notifications
+  labels:
+    helm.sh/chart: notifications-0.1.0
+    app.kubernetes.io/name: notifications
+    app.kubernetes.io/instance: notifications
+    app.kubernetes.io/version: "1.0.1"
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/backend-protocol: HTTP
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: "notifications.local"
+      http:
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: notifications
+                port:
+                  number: 8085
+
+NOTES:
+1. Get the application URL by running these commands:
+  http://notifications.local/

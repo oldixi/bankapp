@@ -1,0 +1,74 @@
+Release "common" has been upgraded. Happy Helming!
+NAME: common
+LAST DEPLOYED: Mon Nov 10 19:27:10 2025
+NAMESPACE: bankapp
+STATUS: deployed
+REVISION: 4
+TEST SUITE: None
+USER-SUPPLIED VALUES:
+global:
+  feign:
+    circuitbreaker:
+      enabled: true
+    config:
+      default:
+        retryer: feign.Retryer.Default
+  ingress:
+    className: nginx
+    enabled: true
+    host: bankapp.local
+  namespace: bankapp
+  spring:
+    security:
+      oauth2:
+        client:
+          provider:
+            keycloak:
+              issuerUri: http://keycloak/realms/bankapp
+          registration:
+            keycloak:
+              authorizationGrantType: client_credentials
+              clientAuthenticationMethod: client_secret_basic
+              provider: keycloak
+              scope: openid,profile,email
+        resourceserver:
+          jwt:
+            issuerUri: http://keycloak/realms/bankapp
+            jwkSetUri: http://keycloak/realms/bankapp/protocol/openid-connect/certs
+replicaCount: 1
+
+COMPUTED VALUES:
+global:
+  feign:
+    circuitbreaker:
+      enabled: true
+    config:
+      default:
+        retryer: feign.Retryer.Default
+  ingress:
+    className: nginx
+    enabled: true
+    host: bankapp.local
+  namespace: bankapp
+  spring:
+    security:
+      oauth2:
+        client:
+          provider:
+            keycloak:
+              issuerUri: http://keycloak/realms/bankapp
+          registration:
+            keycloak:
+              authorizationGrantType: client_credentials
+              clientAuthenticationMethod: client_secret_basic
+              provider: keycloak
+              scope: openid,profile,email
+        resourceserver:
+          jwt:
+            issuerUri: http://keycloak/realms/bankapp
+            jwkSetUri: http://keycloak/realms/bankapp/protocol/openid-connect/certs
+replicaCount: 1
+
+HOOKS:
+MANIFEST:
+

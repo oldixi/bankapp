@@ -71,6 +71,33 @@ services:
         echo "Keycloak is healthy!"
     restart: on-failure
 
+  kafka:
+    image: docker.io/bitnamilegacy/kafka:4.0.0-debian-12-r10
+    container_name: kafka
+    environment:
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CFG_NODE_ID=1
+      - KAFKA_CFG_PROCESS_ROLES=controller,broker
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=1@kafka:9093
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+      - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
+    ports:
+      - "9092:9092"
+    healthcheck:
+      test: [
+        "CMD",
+        "kafka-topics.sh",
+        "--list",
+        "--bootstrap-server",
+        "localhost:9092"
+      ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
+
   gateway:
     build: ./gateway
     ports:
@@ -101,7 +128,10 @@ services:
     build: ./accounts
     environment:
       SPRING_CLOUD_CONSUL_HOST: consul
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
     depends_on:
+      kafka:
+        condition: service_healthy
       consul-config-loader:
         condition: service_completed_successfully
       consul:
@@ -139,7 +169,10 @@ services:
     build: ./notifications
     environment:
       SPRING_CLOUD_CONSUL_HOST: consul
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
     depends_on:
+      kafka:
+        condition: service_healthy
       consul-config-loader:
         condition: service_completed_successfully
       consul:

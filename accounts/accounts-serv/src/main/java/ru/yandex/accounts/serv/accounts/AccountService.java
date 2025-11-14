@@ -2,14 +2,11 @@ package ru.yandex.accounts.serv.accounts;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import ru.yandex.accounts.dto.AccountDto;
-import ru.yandex.accounts.dto.AccountTransferDto;
-import ru.yandex.accounts.dto.EUserAttributes;
-import ru.yandex.accounts.dto.NewAccountDto;
-import ru.yandex.accounts.serv.api.NotificationsClient;
+import ru.yandex.accounts.dto.*;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -23,11 +20,28 @@ public class AccountService {
     private final AccountRepository accountRepository;
     private final AccountMapper accountMapper;
     private final PasswordEncoder encoder;
-    private final NotificationsClient notificationsClient;
+    private final KafkaTemplate<String, BankappMsg> kafkaTemplate;
+
+    private static final String USER_NOT_FOUND_MSG = "Пользователь не найден";
+    private static final String NEW_BALANCE_MSG = "Баланс вашего счета в банковском приложении изменился. Новый баланс:";
+    private static final String USER_DELETE_MSG = "Ваш аккаунт был удален из банковского приложения";
+    private static final String USER_CREATE_MSG = "Добро пожаловать в банковское приложение! Ваш аккаунт успешно создан.";
+    private static final String PASSWORD_CHANGE_MSG = "Ваш пароль в банковском приложении успешно изменен";
+    private static final String USER_UPDATE_MSG = "Информация о вашем аккаунте в банковском приложении успешно изменена";
+    private static final String USER_WITH_LOGIN_MSG = "Пользователь с логином ";
+    private static final String ALREADY_EXIST_MSG = " уже существует";
+    private static final String PASSWORDS_MISMATCH_MSG = "Пароли не совпадают";
+    private static final String INCORRECT_DATE_FORMAT_MSG = "Неверный формат даты рождения";
+    private static final String YOUNG_USER_MSG = "Невозможно зарегистрировать пользователя младше 18 лет";
+    private static final String REQUIRED_PARAM_MSG = "Не задан обязательный параметр ";
+    private static final String ACCOUNT_NOT_EXIST_MSG = "Лицевой счет не существует";
+    private static final String NEGATIVE_BALANCE_MSG = "Сумма на счете не может быть отрицательной";
+    private static final String DELETION_NOT_POSSIBLE_MSG = "Удаление счета не возможно: баланс на счете не равен 0";
+    private static final String TOPIC = "bankapp-inform";
 
     public AccountDto loadUserByUsername(String login) {
         return accountMapper.toDto(accountRepository.findAccountByLoginIgnoreCase(login)
-                .orElseThrow(() -> new UsernameNotFoundException("Пользователь не найден")));
+                .orElseThrow(() -> new UsernameNotFoundException(USER_NOT_FOUND_MSG)));
     }
 
     public AccountDto getAccount(String login) {
@@ -57,8 +71,7 @@ public class AccountService {
         accountFromDb.setBalance(balance);
         if (accountFromDb.getEmail() != null && errors.isEmpty()) {
             accountRepository.save(accountMapper.toEntity(accountFromDb));
-            notify(accountFromDb.getEmail(),
-                    "Баланс вашего счета в банковском приложении изменился. Новый баланс:" + balance);
+            notify(accountFromDb.getEmail(), NEW_BALANCE_MSG + balance);
         }
         accountFromDb.setErrors(errors);
         return accountFromDb;
@@ -73,7 +86,7 @@ public class AccountService {
                 .toList();
         if (accountFromDb.getBalance().equals(0D)) {
             accountRepository.delete(accountMapper.toEntity(accountFromDb));
-            notify(accountFromDb.getEmail(), "Ваш аккаунт был удален из банковского приложения");
+            notify(accountFromDb.getEmail(), USER_DELETE_MSG);
         }
         else accountFromDb.setErrors(errors);
         return accountFromDb;
@@ -96,7 +109,7 @@ public class AccountService {
             user.setPassword(encoder.encode(user.getPassword()));
             log.info("register user={}", user);
             user = accountMapper.toUserFrontDto(accountRepository.save(accountMapper.toEntity(user)));
-            notify(user.getEmail(), "Добро пожаловать в банковское приложение! Ваш аккаунт успешно создан.");
+            notify(user.getEmail(), USER_CREATE_MSG);
         }
         user.setErrors(errors);
         log.info("register finish user={}", user);
@@ -113,7 +126,7 @@ public class AccountService {
         if (errors.isEmpty()) {
             user.setPassword(encoder.encode(newPassword));
             user = accountMapper.toUserFrontDto(accountRepository.save(accountMapper.toEntity(user)));
-            notify(user.getEmail(), "Ваш пароль в банковском приложении успешно изменен");
+            notify(user.getEmail(), PASSWORD_CHANGE_MSG);
         }
         user.setErrors(errors);
         return user;
@@ -135,7 +148,7 @@ public class AccountService {
             user.setBirthdate(birthdate);
             log.info("editUserInfo: setBirthdate, user={}", user);
             user = accountMapper.toUserFrontDto(accountRepository.save(accountMapper.toEntity(user)));
-            notify(user.getEmail(), "Информация о вашем аккаунте в банковском приложении успешно изменена");
+            notify(user.getEmail(), USER_UPDATE_MSG);
         }
         user.setErrors(errors);
         return user;
@@ -143,41 +156,41 @@ public class AccountService {
 
     private String checkUniqueness(String login) {
         if (login != null && accountRepository.existsAccountByLoginIgnoreCase(login))
-            return "Пользователь с логином " + login + " уже существует";
+            return USER_WITH_LOGIN_MSG + login + ALREADY_EXIST_MSG;
         return "";
     }
 
     private String checkPasswords(String password, String passwordRepeat) {
-        if (password != null && passwordRepeat != null && !password.equals(passwordRepeat)) return "Пароли не совпадают";
+        if (password != null && passwordRepeat != null && !password.equals(passwordRepeat)) return PASSWORDS_MISMATCH_MSG;
         return "";
     }
 
     private String checkBirthdate18(String birthdateStr) {
         LocalDate birthdate = convertBirthdate(birthdateStr);
-        if (birthdate == null) return "Неверный формат даты рождения";
+        if (birthdate == null) return INCORRECT_DATE_FORMAT_MSG;
         if (birthdate.plusYears(18).isAfter(LocalDate.now()))
-            return "Невозможно зарегистрировать пользователя младше 18 лет";
+            return YOUNG_USER_MSG;
         return "";
     }
 
     private String checkNotNullParams(String attrValue, EUserAttributes attrName) {
-        if (attrValue == null || attrValue.isBlank()) return "Не задан обязательный параметр " + attrName.getAttrName();
+        if (attrValue == null || attrValue.isBlank()) return REQUIRED_PARAM_MSG + attrName.getAttrName();
         return "";
     }
 
     private String checkExistence(AccountDto account) {
-        if (account != null && account.getName() == null) return "Лицевой счет не существует";
+        if (account != null && account.getName() == null) return ACCOUNT_NOT_EXIST_MSG;
         return "";
     }
 
     private String checkAmountNeg(Double amount) {
-        if (amount != null && amount < 0) return "Сумма на счете не может быть отрицательной";
+        if (amount != null && amount < 0) return NEGATIVE_BALANCE_MSG;
         return "";
     }
 
     private String checkDeletionAbility(boolean needToDelete, Double amount) {
         if (needToDelete && !amount.equals(0D))
-            return "Удаление счета не возможно: баланс на счете не равен 0";
+            return DELETION_NOT_POSSIBLE_MSG;
         return "";
     }
 
@@ -190,9 +203,9 @@ public class AccountService {
         return null;
     }
 
-    private void notify(String email, String message) {
+    public void notify(String email, String message) {
         try {
-            notificationsClient.sendNotification(email, message);
+            kafkaTemplate.send(TOPIC, email, new BankappMsg(email, message));
         } catch (Exception e) {
             log.warn("notify: Сервис доставки сообщений временно недоступен. Не удалось отправить сообщение на email {}. Ошибка {}",
                     email, e.getMessage());

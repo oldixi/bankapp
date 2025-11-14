@@ -28,6 +28,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.liquibase:liquibase-core'
     implementation 'org.postgresql:postgresql'
+    implementation project(path: ':notifications')
     runtimeOnly 'org.postgresql:postgresql'
     implementation project(':accounts:accounts-dto')
     testImplementation 'org.springframework.cloud:spring-cloud-starter-contract-stub-runner'

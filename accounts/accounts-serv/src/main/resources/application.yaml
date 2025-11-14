@@ -15,6 +15,23 @@ spring:
   config:
     import:
       - "optional:consul:"
+  kafka:
+    bootstrap-servers: kafka:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        interceptor.classes: ru.yandex.accounts.serv.accounts.config.KafkaLoggingInterceptor
+    admin:
+      properties:
+        bootstrap.servers: kafka:9092
+      auto-create: true
+    retry:
+      topic:
+        enabled: true
+        attempts: 5
+        backoff:
+          delay: 5
 
 logging:
   level:
