@@ -25,15 +25,7 @@ data:
           resourceserver:
             jwt:
               issuerUri: {{ .Values.common.global.spring.security.oauth2.resourceserver.jwt.issuerUri }}
-              jwkSetUri: {{ .Values.common.global.spring.security.oauth2.resourceserver.jwt.jwkSetUri }}
-      cloud:
-        kubernetes:
-          discovery:
-            enabled: {{ .Values.config.spring.cloud.kubernetes.discovery.enabled }}
-          reload:
-            enabled: {{ .Values.config.spring.cloud.kubernetes.reload.enabled }}
-        loadbalancer:
-          enabled: {{ .Values.config.spring.cloud.loadbalancer.enabled }}              
+              jwkSetUri: {{ .Values.common.global.spring.security.oauth2.resourceserver.jwt.jwkSetUri }}            
       mail:
         host: {{ .Values.config.spring.mail.host }}
         port: {{ .Values.config.spring.mail.port }}
@@ -51,9 +43,24 @@ data:
                 port: {{ .Values.config.spring.mail.properties.mail.smtp.socketFactory.port }}
                 class: {{ .Values.config.spring.mail.properties.mail.smtp.socketFactory.class }}
                 fallback: {{ .Values.config.spring.mail.properties.mail.smtp.socketFactory.fallback }}
-    feign:
-      circuitbreaker:
-        enabled: {{ .Values.common.global.feign.circuitbreaker.enabled }}
-      config:
-        default:
-          retryer: {{ .Values.common.global.feign.config.default.retryer }}            
+      kafka:
+        bootstrapServers: {{ .Values.config.spring.kafka.bootstrapServers }}
+        producer:
+          keySerializer: {{ .Values.config.spring.kafka.producer.keySerializer }}
+          valueSerializer: {{ .Values.config.spring.kafka.producer.valueSerializer }}
+          properties:
+            spring.json.add.type.headers: {{ .Values.config.spring.kafka.producer.properties.headers }}
+        consumer:
+          groupId: {{ .Values.config.spring.kafka.consumer.groupId }}
+          autoOffsetReset: {{ .Values.config.spring.kafka.consumer.autoOffsetReset }}
+          enableAutoCommit: {{ .Values.config.spring.kafka.consumer.enableAutoCommit }}
+          keyDeserializer: {{ .Values.config.spring.kafka.consumer.keyDeserializer }}
+          valueDeserializer: {{ .Values.config.spring.kafka.consumer.valueDeserializer }}
+          properties:
+            spring.json.trusted.packages: "{{ .Values.config.spring.kafka.consumer.properties.packages }}"
+            spring.json.use.type.headers: {{ .Values.config.spring.kafka.consumer.properties.headers }}
+            spring.json.value.default.type: {{ .Values.config.spring.kafka.consumer.properties.jsonType }}
+            interceptor.classes: {{ .Values.config.spring.kafka.consumer.properties.interceptor }}
+        listener:
+          ackMode: {{ .Values.config.spring.kafka.listener.ackMode }}
+          missingTopicsFatal: {{ .Values.config.spring.kafka.listener.missingTopicsFatal }}         

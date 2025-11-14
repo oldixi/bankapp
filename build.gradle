@@ -95,7 +95,6 @@ subprojects {
 
 	dependencies {
 		implementation 'org.springframework.boot:spring-boot-starter-actuator'
-		implementation 'org.springframework.cloud:spring-cloud-starter-kubernetes-client-all'
 		implementation 'org.springframework.cloud:spring-cloud-starter-loadbalancer'
 		implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
 		implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
@@ -114,6 +113,7 @@ subprojects {
 			implementation 'org.springframework.boot:spring-boot-starter-web'
 			implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 			implementation 'org.springframework:spring-tx'
+			implementation 'org.springframework.cloud:spring-cloud-starter-kubernetes-client-all'
 			testImplementation 'org.springframework.cloud:spring-cloud-starter-contract-stub-runner'
 			implementation project(':accounts:accounts-dto')
 		}
@@ -177,6 +177,7 @@ subprojects {
 			implementation 'org.aspectj:aspectjweaver'
 			implementation project(':accounts:accounts-dto')
 			implementation 'org.springframework.boot:spring-boot-starter-web'
+			implementation 'org.springframework.cloud:spring-cloud-starter-kubernetes-client-all'
 			testImplementation 'org.springframework.cloud:spring-cloud-starter-contract-stub-runner'
 			testImplementation 'org.springframework.cloud:spring-cloud-starter-contract-verifier'
 		}
@@ -185,6 +186,7 @@ subprojects {
 			implementation 'org.aspectj:aspectjweaver'
 			implementation project(':accounts:accounts-dto')
 			implementation 'org.springframework.boot:spring-boot-starter-web'
+			implementation 'org.springframework.cloud:spring-cloud-starter-kubernetes-client-all'
 			testImplementation 'org.springframework.cloud:spring-cloud-starter-contract-stub-runner'
 			testImplementation 'org.springframework.cloud:spring-cloud-starter-contract-verifier'
 		}

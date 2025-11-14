@@ -1,0 +1,9 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "notifications.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+{{- with .Values.rules }}
+rules:
+  {{- toYaml . | nindent 8 }}
+{{- end }}

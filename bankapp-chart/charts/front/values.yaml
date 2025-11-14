@@ -107,3 +107,13 @@ config:
           registration:
             keycloak:
               clientId: front
+    cloud:
+      kubernetes:
+        discovery:
+          enabled: true
+    feign:
+      client:
+        config:
+          default:
+            connectTimeout: 5000
+            readTimeout: 15000

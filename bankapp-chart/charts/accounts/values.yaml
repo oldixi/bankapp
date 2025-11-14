@@ -106,3 +106,20 @@ config:
           registration:
             keycloak:
               clientId: accounts
+    kafka:
+      bootstrapServers: kafka:9092
+      producer:
+        keySerializer: org.apache.kafka.common.serialization.StringSerializer
+        valueSerializer: org.springframework.kafka.support.serializer.JsonSerializer
+        properties:
+          interceptor: ru.yandex.accounts.serv.accounts.config.KafkaLoggingInterceptor
+      admin:
+        properties:
+          bootstrapServers: kafka:9092
+        autoCreate: true
+      retry:
+        topic:
+          enabled: true
+          attempts: 5
+          backoff:
+            delay: 5

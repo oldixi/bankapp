@@ -88,11 +88,18 @@ docker build -f cash/Dockerfile -t cash .
 docker build -f transfer/Dockerfile -t transfer .
 docker build -f front/Dockerfile -t front .
 ```
+
 * скачать зависимости (для postgresql, keycloak и kafka)
 ```bash
 cd bankapp-chart
 helm dependency build
 ```
+
+* создать namespace
+```bash
+kubectl create namespace bankapp
+```
+
 * создать секреты в Kubernetis (в примере пространство имен bankapp)
 ```bash
 kubectl create secret generic accounts-secrets \
@@ -149,7 +156,7 @@ kubectl create secret generic kafka-secrets \
 
 * установить чарт (в примере пространство имен bankapp)
 ```bash
-helm upgrade --install bankapp . -n bankapp
+helm upgrade --install bankapp . -n bankapp -f values.yaml
 ```
 
 Вход приложения осуществляется по адресу:<br>

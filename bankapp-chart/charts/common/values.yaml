@@ -22,6 +22,14 @@ global:
           jwt:
             issuerUri: http://keycloak/realms/bankapp
             jwkSetUri: http://keycloak/realms/bankapp/protocol/openid-connect/certs
+    cloud:
+      kubernetes:
+        discovery:
+          enabled: true
+          allNamespaces: true
+          includeNotReadyAddresses: true
+          waitForReadyAddresses: true
+          timeout: 30s
   feign:
     circuitbreaker:
       enabled: true

@@ -33,9 +33,20 @@ data:
             jwt:
               issuerUri: {{ .Values.common.global.spring.security.oauth2.resourceserver.jwt.issuerUri }}
               jwkSetUri: {{ .Values.common.global.spring.security.oauth2.resourceserver.jwt.jwkSetUri }}
-    feign:
-      circuitbreaker:
-        enabled: {{ .Values.common.global.feign.circuitbreaker.enabled }}
-      config:
-        default:
-          retryer: {{ .Values.common.global.feign.config.default.retryer }}
+      kafka:
+        bootstrapServers: {{ .Values.config.spring.kafka.bootstrapServers }}
+        producer:
+          keySerializer: {{ .Values.config.spring.kafka.producer.keySerializer }}
+          valueSerializer: {{ .Values.config.spring.kafka.producer.valueSerializer }}
+          properties:
+            interceptor.classes: {{ .Values.config.spring.kafka.producer.properties.interceptor }}
+        admin:
+          properties:
+            bootstrap.servers: {{ .Values.config.spring.kafka.admin.properties.bootstrapServers }}
+          autoCreate: {{ .Values.config.spring.kafka.admin.autoCreate }}
+        retry:
+          topic:
+            enabled: {{ .Values.config.spring.kafka.retry.topic.enabled }}
+            attempts: {{ .Values.config.spring.kafka.retry.topic.attempts }}
+            backoff:
+              delay: {{ .Values.config.spring.kafka.retry.topic.backoff.delay }}  
