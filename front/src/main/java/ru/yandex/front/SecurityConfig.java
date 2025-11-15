@@ -35,7 +35,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers("/actuator/health", "/actuator/health/**", "/actuator/info", "/actuator/metrics").permitAll()
                         .requestMatchers("/login", "/signup").permitAll()
-                        .anyRequest().authenticated())
+                        //.anyRequest().authenticated())
+                        .anyRequest().permitAll())
                 .formLogin(log -> log
                         .loginPage("/login")
                         .defaultSuccessUrl("/user/main"))

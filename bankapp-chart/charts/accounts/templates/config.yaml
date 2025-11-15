@@ -49,4 +49,12 @@ data:
             enabled: {{ .Values.config.spring.kafka.retry.topic.enabled }}
             attempts: {{ .Values.config.spring.kafka.retry.topic.attempts }}
             backoff:
-              delay: {{ .Values.config.spring.kafka.retry.topic.backoff.delay }}  
+              delay: {{ .Values.config.spring.kafka.retry.topic.backoff.delay }}
+    logging:
+      level:
+        org.springframework.cloud.kubernetes: DEBUG
+        org.springframework.web: DEBUG
+        ru.yandex.accounts: DEBUG
+        org.springframework.security: DEBUG
+        org.springframework.security.oauth2: DEBUG
+        org.springframework.web.reactive: DEBUG            

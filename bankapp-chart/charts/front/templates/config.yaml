@@ -26,10 +26,33 @@ data:
             jwt:
               issuerUri: {{ .Values.common.global.spring.security.oauth2.resourceserver.jwt.issuerUri }}
               jwkSetUri: {{ .Values.common.global.spring.security.oauth2.resourceserver.jwt.jwkSetUri }}
+      cloud:
+        kubernetes:
+          discovery:
+            enabled: {{ .Values.common.global.spring.cloud.kubernetes.discovery.enabled }}
+        openfeign:
+          client:
+            config:
+              default:
+                connectTimeout: {{ .Values.common.global.spring.cloud.openfeign.client.config.default.connectTimeout }}
+                readTimeout: {{ .Values.common.global.spring.cloud.openfeign.client.config.default.readTimeout }}                
     feign:
       circuitbreaker:
         enabled: {{ .Values.common.global.feign.circuitbreaker.enabled }}
       config:
         default:
-          retryer: {{ .Values.common.global.feign.config.default.retryer }}
-  
+          retryer: {{ .Values.common.global.feign.config.default.retryer }}       
+      client:
+        config:
+          default:
+            loggerLevel: basic
+    logging:
+      level:
+        org.springframework.cloud.openfeign: DEBUG
+        feign: DEBUG
+        org.springframework.cloud.kubernetes: DEBUG
+        org.springframework.web: DEBUG
+        ru.yandex.front: DEBUG
+        org.springframework.security: DEBUG
+        org.springframework.security.oauth2: DEBUG
+        org.springframework.web.reactive: DEBUG

@@ -102,7 +102,7 @@ keycloak:
   replicaCount: 1
   fullnameOverride: "keycloak"
   ingress:
-    enabled: false
+    enabled: true
   auth:
     adminUser: admin
     adminPassword: admin
@@ -199,58 +199,35 @@ kafka:
   image:
     registry: docker.io
     repository: bitnamilegacy/kafka
-    tag: "4.0.0-debian-12-r10"
+    #tag: "4.0.0-debian-12-r10"
+    tag: "3.3.2-debian-11-r11"  # более старая стабильная версия
     pullPolicy: IfNotPresent
-  auth:
-    interBrokerProtocol: "plaintext"
-  listeners:
-    client:
-      protocol: "PLAINTEXT"
+
+  # ZooKeeper
   kraft:
+    enabled: false
+  zookeeper:
     enabled: true
-  controller:
     replicaCount: 1
-    controllerOnly: false
-    minId: 0
-    heapOpts: -Xmx512M -Xms512M
-  broker:
-    replicaCount: 0
-  resources:
-    requests:
-      memory: "2Gi"
-      cpu: "1000m"
-    limits:
-      memory: "2Gi"
-      cpu: "1000m"
+    persistence:
+      enabled: true
+      size: 1Gi
+
+  # Минимальные настройки
+  auth:
+    clientProtocol: plaintext
+    interBrokerProtocol: plaintext
+
   persistence:
     enabled: true
     size: 1Gi
-  clusterId: "bankapp"
-  existingKraftSecret: "kafka-secrets"
-  kraftVersion: 1
+
   service:
     type: ClusterIP
     ports:
       client: 9092
-  sasl:
-    enabledMechanisms: "PLAIN"
-    interBrokerMechanism: "PLAIN"
-    controllerMechanism: "PLAIN"
-    interbroker:
-      user: "inter_broker_user"
-      password: ""
-    controller:
-      user: "controller_user"
-      password: ""
-    client:
-      users:
-        - "user1"
-      passwords: ""
-    auth:
-      clientProtocol: "plaintext"
-      interBrokerProtocol: "plaintext"
-      controllerProtocol: "plaintext"
-    livenessProbe:
-      enabled: false
-    readinessProbe:
-      enabled: false
+    #tag: "4.0.0-debian-12-r10"
+    #pullPolicy: IfNotPresent
+
+  clusterId: "bankapp"
+  existingKraftSecret: "kafka-secrets"

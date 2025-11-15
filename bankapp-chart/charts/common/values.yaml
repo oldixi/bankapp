@@ -26,10 +26,12 @@ global:
       kubernetes:
         discovery:
           enabled: true
-          allNamespaces: true
-          includeNotReadyAddresses: true
-          waitForReadyAddresses: true
-          timeout: 30s
+      openfeign:
+        client:
+          config:
+            default:
+              connectTimeout: 5000
+              readTimeout: 15000
   feign:
     circuitbreaker:
       enabled: true

@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
 import org.springframework.stereotype.Service;
 import ru.yandex.accounts.dto.*;
 import ru.yandex.api.AccountsClient;
@@ -52,6 +53,9 @@ public class FrontService implements UserDetailsService {
                 .birthdate(birthdate)
                 .build();
         try {
+            log.debug("registerUser {}", login);
+
+
             return accountsClient.register(userToSave);
         } catch (Exception e) {
             return AccountDto.builder()

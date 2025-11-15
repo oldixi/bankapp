@@ -2,8 +2,13 @@ package ru.yandex.front;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.client.OAuth2AuthorizeRequest;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +21,34 @@ import ru.yandex.accounts.dto.AccountDto;
 @Slf4j
 public class FrontController {
     private final FrontService service;
+
+    @Autowired(required = false)
+    private OAuth2AuthorizedClientManager clientManager; //временно
+
+    //временно
+    private String debugToken() {
+        try {
+            if (clientManager == null) {
+                return "OAuth2AuthorizedClientManager is NULL";
+            }
+
+            OAuth2AuthorizeRequest request = OAuth2AuthorizeRequest.withClientRegistrationId("keycloak")
+                    .principal("front")
+                    .build();
+
+            OAuth2AuthorizedClient client = clientManager.authorize(request);
+
+            if (client == null) {
+                return "OAuth2AuthorizedClient is NULL - cannot get token";
+            }
+
+            OAuth2AccessToken token = client.getAccessToken();
+            return "Token: " + token.getTokenValue().substring(0, 50) + "...";
+
+        } catch (Exception e) {
+            return "Token ERROR: " + e.getClass().getSimpleName() + " - " + e.getMessage();
+        }
+    }
 
     /*
     GET "/" - домашняя страница банковского приложения пользователя
@@ -96,6 +129,7 @@ public class FrontController {
                          @RequestParam String email,
                          @RequestParam String birthdate,
                          RedirectAttributes redirectAttributes) {
+        log.info(debugToken()); //временно
         AccountDto newAccount = service.registerUser(login, password, confirmPassword, name, email, birthdate);
 
         if (!newAccount.getErrors().isEmpty()) {

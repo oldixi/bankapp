@@ -26,6 +26,16 @@ data:
             jwt:
               issuerUri: {{ .Values.common.global.spring.security.oauth2.resourceserver.jwt.issuerUri }}
               jwkSetUri: {{ .Values.common.global.spring.security.oauth2.resourceserver.jwt.jwkSetUri }}
+      cloud:
+        kubernetes:
+          discovery:
+            enabled: {{ .Values.common.global.spring.cloud.kubernetes.discovery.enabled }}
+        openfeign:
+          client:
+            config:
+              default:
+                connectTimeout: {{ .Values.common.global.spring.cloud.openfeign.client.config.default.connectTimeout }}
+                readTimeout: {{ .Values.common.global.spring.cloud.openfeign.client.config.default.readTimeout }}
     feign:
       circuitbreaker:
         enabled: {{ .Values.common.global.feign.circuitbreaker.enabled }}
