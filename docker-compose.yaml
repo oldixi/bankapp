@@ -97,6 +97,14 @@ services:
       timeout: 5s
       retries: 10
       start_period: 40s
+  zipkin:
+    image: openzipkin/zipkin:latest
+    container_name: zipkin
+    ports:
+      - "9411:9411"
+    environment:
+      - STORAGE_TYPE=mem
+    restart: unless-stopped
 
   gateway:
     build: ./gateway
@@ -117,6 +125,8 @@ services:
     environment:
       SPRING_CLOUD_CONSUL_HOST: consul
     depends_on:
+      zipkin:
+        condition: service_healthy
       consul-config-loader:
         condition: service_completed_successfully
       consul:
@@ -130,6 +140,8 @@ services:
       SPRING_CLOUD_CONSUL_HOST: consul
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
     depends_on:
+      zipkin:
+        condition: service_healthy
       kafka:
         condition: service_healthy
       consul-config-loader:
@@ -146,6 +158,8 @@ services:
     environment:
       SPRING_CLOUD_CONSUL_HOST: consul
     depends_on:
+      zipkin:
+        condition: service_healthy
       consul-config-loader:
         condition: service_completed_successfully
       consul:
@@ -158,6 +172,8 @@ services:
     environment:
       SPRING_CLOUD_CONSUL_HOST: consul
     depends_on:
+      zipkin:
+        condition: service_healthy
       consul-config-loader:
         condition: service_completed_successfully
       consul:
@@ -171,6 +187,8 @@ services:
       SPRING_CLOUD_CONSUL_HOST: consul
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
     depends_on:
+      zipkin:
+        condition: service_healthy
       kafka:
         condition: service_healthy
       consul-config-loader:

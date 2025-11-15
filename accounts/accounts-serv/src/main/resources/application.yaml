@@ -2,6 +2,13 @@ spring:
   application:
     name: accounts
   cloud:
+    openfeign:
+      client:
+        config:
+          default:
+            connectTimeout: 5000
+            readTimeout: 15000
+            loggerLevel: full
     consul:
       host: localhost
       port: 8500
@@ -32,7 +39,17 @@ spring:
         attempts: 5
         backoff:
           delay: 5
-
+management:
+  zipkin:
+    tracing:
+      endpoint:  http://zipkin:9411/api/v2/spans
+  tracing:
+    sampling:
+      probability: 1
+  endpoints:
+    web:
+      exposure:
+        include: "health,info,metrics,tracing"
 logging:
   level:
     org.springframework.boot.context.config: info
