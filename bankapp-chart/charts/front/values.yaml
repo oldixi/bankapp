@@ -67,8 +67,23 @@ httpRoute:
 
 resources: {}
 
-livenessProbe: {}
-readinessProbe: {}
+livenessProbe:
+  httpGet:
+    path: /actuator/health/liveness
+    port: 8080
+  initialDelaySeconds: 120
+  periodSeconds: 60
+  timeoutSeconds: 10
+  failureThreshold: 10
+
+readinessProbe:
+  httpGet:
+    path: /actuator/health/readiness
+    port: 8080
+  initialDelaySeconds: 120
+  periodSeconds: 60
+  timeoutSeconds: 10
+  failureThreshold: 10
 
 rules:
   - apiGroups: [""]

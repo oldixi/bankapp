@@ -8,6 +8,9 @@ dependencies:
 - name: kafka
   repository: https://raw.githubusercontent.com/bitnami/charts/refs/heads/archive-full-index/bitnami/
   version: 32.4.3
+- name: zipkin
+  repository: https://openzipkin.github.io/zipkin-helm
+  version: 0.4.0
 - name: accounts
   repository: file://./charts/accounts
   version: 0.1.0
@@ -26,5 +29,5 @@ dependencies:
 - name: common
   repository: file://./charts/common
   version: 0.1.0
-digest: sha256:382ede30a111713909f7ebbbabc51ea1d0117f74be38252fb84288161e5278b5
-generated: "2025-11-14T14:47:06.523881+03:00"
+digest: sha256:2e90938a0bc0dac50af73d11193fe26a126816335fdb19ea3ba608ab9c0885d8
+generated: "2025-11-16T10:54:39.715406+03:00"

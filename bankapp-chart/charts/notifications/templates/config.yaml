@@ -64,3 +64,14 @@ data:
         listener:
           ackMode: {{ .Values.config.spring.kafka.listener.ackMode }}
           missingTopicsFatal: {{ .Values.config.spring.kafka.listener.missingTopicsFatal }}         
+    management:
+      zipkin:
+        tracing:
+          endpoint: {{ .Values.common.global.management.zipkin.tracing.endpoint }}
+      tracing:
+        sampling:
+          probability: {{ .Values.common.global.management.tracing.sampling.probability }}
+      endpoints:
+        web:
+          exposure:
+            include: {{ .Values.common.global.management.endpoints.web.exposure.include }}

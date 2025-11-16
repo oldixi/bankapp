@@ -141,7 +141,7 @@ pipeline {
                             --dry-run=client -o yaml | kubectl apply -f -
 
                         kubectl create secret generic kafka-secrets \
-                          --namespace=bankapp \
+                          --namespace=test \
                           --from-literal=cluster-id=${SECRET} \
                           --from-literal=controller-0-id=0 \
                           --from-literal=client-passwords=${SECRET} \
@@ -149,6 +149,22 @@ pipeline {
                           --from-literal=controller-password=${SECRET} \
                           --dry-run=client -o yaml | kubectl apply -f -
                         """
+                    }
+                }
+            }
+        }
+
+        stage('Deploy Prometheus and Grafana for TEST') {
+            steps {
+                script {
+                    sh """
+                        helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+                        helm repo add grafana https://grafana.github.io/helm-charts
+                        helm repo update
+
+                        helm install prometheus-stack prometheus-community/kube-prometheus-stack -n test
+                        helm install grafana grafana/grafana -n test
+                    """
                     }
                 }
             }
@@ -223,7 +239,32 @@ pipeline {
                             --namespace=prod \
                             --from-literal=postgres-password=${SECRET} \
                             --from-literal=password=${SECRET}
+
+                        kubectl create secret generic kafka-secrets \
+                          --namespace=prod \
+                          --from-literal=cluster-id=${SECRET} \
+                          --from-literal=controller-0-id=0 \
+                          --from-literal=client-passwords=${SECRET} \
+                          --from-literal=inter-broker-password=${SECRET} \
+                          --from-literal=controller-password=${SECRET} \
+                          --dry-run=client -o yaml | kubectl apply -f -
                         """
+                    }
+                }
+            }
+        }
+
+        stage('Deploy Prometheus and Grafana for PROD') {
+            steps {
+                script {
+                    sh """
+                        helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+                        helm repo add grafana https://grafana.github.io/helm-charts
+                        helm repo update
+
+                        helm install prometheus-stack prometheus-community/kube-prometheus-stack -n prod
+                        helm install grafana grafana/grafana -n prod
+                    """
                     }
                 }
             }

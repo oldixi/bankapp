@@ -16,10 +16,14 @@ dependencies:
     alias: postgresql
     condition: postgresql.enabled
   - name: kafka
-    #version: 32.4.3
+    version: 32.4.3
     repository: https://raw.githubusercontent.com/bitnami/charts/refs/heads/archive-full-index/bitnami/
     alias: kafka
     condition: kafka.enabled
+  - name: zipkin
+    version: 0.4.0
+    repository: https://openzipkin.github.io/zipkin-helm
+    condition: zipkin.enabled
   - name: accounts
     version: 0.1.0
     repository: "file://./charts/accounts"

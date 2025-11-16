@@ -32,9 +32,21 @@ global:
             default:
               connectTimeout: 5000
               readTimeout: 15000
+              loggerLevel: full
   feign:
     circuitbreaker:
       enabled: true
     config:
       default:
         retryer: feign.Retryer.Default
+  management:
+    zipkin:
+      tracing:
+        endpoint: http://zipkin:9411/api/v2/spans
+    tracing:
+      sampling:
+        probability: 1
+    endpoints:
+      web:
+        exposure:
+          include: "health,info,metrics,tracing,prometheus"

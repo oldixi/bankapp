@@ -159,6 +159,28 @@ kubectl create secret generic kafka-secrets \
 helm upgrade --install bankapp . -n bankapp -f values.yaml
 ```
 
+* в проекте предусмотрена настройка мониторинга через Prometheus и Grafana. Их необходимо установить в Kubernetis и связать с чартом
+```bash
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo add grafana https://grafana.github.io/helm-charts
+helm repo update
+
+helm install prometheus-stack prometheus-community/kube-prometheus-stack -n bankapp
+helm install grafana grafana/grafana -n bankapp
+```
+
+* получить пароль администратора для Grafana
+```bash
+kubectl get secret -n bankapp grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo
+```
+
+* пробросить порты и зайти под username=admin и паролем, полученным на предыдущем шаге по адресу http://localhost:3000
+```bash
+export POD_NAME=$(kubectl get pods -n bankapp -l "app.kubernetes.io/name=grafana,app.kubernetes.io/instance=grafana" -o jsonpath="{.items[0].metadata.name}")
+kubectl -n bankapp port-forward $POD_NAME 3000
+*
+```
+
 Вход приложения осуществляется по адресу:<br>
 http://bankapp/login
 
@@ -175,7 +197,7 @@ echo "127.0.0.1 bankapp" | sudo tee -a /etc/hosts
 ```
 * прокинуть порты:
 ```bash
-sudo kubectl port-forward -n ingress-nginx svc/ingress-nginx-controller 80:80
+sudo kubectl port-forward -n bankapp svc/ingress-nginx-controller 80:80
 ```
 
 Для автоматического развертывания приложения в Kubernetes после push'а в любую ветку

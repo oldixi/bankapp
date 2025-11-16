@@ -1,0 +1,19 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: low-transfer-alert
+  namespace: bankapp
+  labels:
+    release: bankapp
+spec:
+  groups:
+    - name: bankapp.rules
+      rules:
+        - alert: LowTransferRate
+          expr: sum(rate(transfers_total[1m])) < 10
+          for: 1m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Снизилось количество переводов между лицевыми счетами"
+            description: "Количество переводов снизилось до 10 в течение последней минуты."

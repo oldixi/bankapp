@@ -35,7 +35,19 @@ data:
             config:
               default:
                 connectTimeout: {{ .Values.common.global.spring.cloud.openfeign.client.config.default.connectTimeout }}
-                readTimeout: {{ .Values.common.global.spring.cloud.openfeign.client.config.default.readTimeout }}                
+                readTimeout: {{ .Values.common.global.spring.cloud.openfeign.client.config.default.readTimeout }}
+                loggerLevel: {{ .Values.common.global.spring.cloud.openfeign.client.config.default.loggerLevel }}                
+    management:
+      zipkin:
+        tracing:
+          endpoint: {{ .Values.common.global.management.zipkin.tracing.endpoint }}
+      tracing:
+        sampling:
+          probability: {{ .Values.common.global.management.tracing.sampling.probability }}
+      endpoints:
+        web:
+          exposure:
+            include: {{ .Values.common.global.management.endpoints.web.exposure.include }}
     feign:
       circuitbreaker:
         enabled: {{ .Values.common.global.feign.circuitbreaker.enabled }}
