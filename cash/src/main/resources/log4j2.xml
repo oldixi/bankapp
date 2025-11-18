@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+    <Properties>
+        <Property name="LOG_PATTERN">%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %logger{36} - [service:%X{serviceName:-unknown},trace:%X{traceId:-},parent:%X{parentSpanId:-},span:%X{spanId:-},login:%X{userLogin:-anonymous}] %msg%n</Property>
+        <Property name="KAFKA_BROKER">kafka:9092</Property>
+    </Properties>
+
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+        </Console>
+
+        <Kafka name="Kafka" topic="bankapp-logs-${spring:spring.application.name}">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+            <Property name="bootstrap.servers">${KAFKA_BROKER}</Property>
+        </Kafka>
+
+        <RollingFile name="File"
+                     fileName="logs/bankapp-${spring:spring.application.name}.log"
+                     filePattern="logs/bankapp-${spring:spring.application.name}.%d{yyyy-MM-dd}.log">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+            </Policies>
+        </RollingFile>
+    </Appenders>
+
+    <Loggers>
+        <Root level="info">
+            <AppenderRef ref="Kafka"/>
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="File"/>
+        </Root>
+        <Logger name="org.apache.kafka" level="trace" >
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="File"/>
+        </Logger>
+    </Loggers>
+</Configuration>

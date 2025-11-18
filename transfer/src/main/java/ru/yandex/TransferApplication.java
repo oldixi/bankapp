@@ -1,4 +1,4 @@
-package ru.yandex.cash;
+package ru.yandex;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -8,9 +8,9 @@ import ru.yandex.api.AccountsClient;
 
 @SpringBootApplication
 @EnableDiscoveryClient
-@EnableFeignClients(basePackages = "ru.yandex.api", clients = {AccountsClient.class})
-public class CashApplication {
-    public static void main(String[] args) {
-        SpringApplication.run(CashApplication.class, args);
-    }
+@EnableFeignClients(basePackages = "ru.yandex.transfer", clients = {AccountsClient.class})
+public class TransferApplication {
+	public static void main(String[] args) {
+		SpringApplication.run(TransferApplication.class, args);
+	}
 }

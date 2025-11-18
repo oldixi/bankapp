@@ -1,4 +1,4 @@
-package ru.yandex.transfer;
+package ru.yandex.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -8,11 +8,18 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.SessionManagementConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableWebSecurity
-public class TransferSecurityConfig {
+public class SecurityConfig {
+    @Bean
+    public PasswordEncoder encoder() {
+        return new BCryptPasswordEncoder();
+    }
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -21,12 +28,24 @@ public class TransferSecurityConfig {
                         .sessionFixation(SessionManagementConfigurer.SessionFixationConfigurer::migrateSession)
                         .maximumSessions(1)
                         .maxSessionsPreventsLogin(false))
+                .csrf(AbstractHttpConfigurer::disable)
+                .cors(Customizer.withDefaults())
+                .oauth2Login(AbstractHttpConfigurer::disable)
                 .oauth2Client(Customizer.withDefaults())
-                .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers("/actuator/health", "/actuator/health/**", "/actuator/info", "/actuator/metrics").permitAll()
-                        .anyRequest().authenticated())
-                .csrf(AbstractHttpConfigurer::disable);
+                        .requestMatchers("/login", "/signup").permitAll()
+                        //.anyRequest().authenticated())
+                        .anyRequest().permitAll())
+                .formLogin(log -> log
+                        .loginPage("/login")
+                        .defaultSuccessUrl("/user/main"))
+                .logout(logout -> logout
+                        .logoutUrl("/logout")
+                        .logoutSuccessUrl("/login?logout=true")
+                        .invalidateHttpSession(true)
+                        .deleteCookies("JSESSIONID")
+                        .permitAll());
         return http.build();
     }
 }
