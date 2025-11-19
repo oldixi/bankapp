@@ -1,0 +1,217 @@
+elasticsearch:
+  enabled: true
+  architecture: "standalone"
+  replicaCount: 1
+  fullnameOverride: elasticsearch
+  image:
+    registry: docker.io
+    repository: bitnamilegacy/elasticsearch
+    tag: 9.1.2-debian-12-r0
+    pullPolicy: IfNotPresent
+  security:
+    enabled: false
+  master:
+    replicaCount: 1
+    extraEnvVars: []
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "500m"
+      limits:
+        memory: "1Gi"
+        cpu: "1000m"
+    heapSize: "256m"
+  persistence:
+    enabled: false
+  data:
+    replicaCount: 0
+  coordinating:
+    replicaCount: 0
+  ingest:
+    enabled: false
+  extraEnvVars:
+    - name: "ES_JAVA_OPTS"
+      value: "-Xms512m -Xmx512m"
+    - name: "cluster.formation.ignore_preexisting_state"
+      value: "true"
+  metrics:
+    enabled: false
+  volumePermissions:
+    image:
+      registry: docker.io
+      repository: bitnamilegacy/os-shell
+      tag: 12-debian-12-r50
+      pullPolicy: IfNotPresent
+  sysctlImage:
+    registry: docker.io
+    repository: bitnamilegacy/os-shell
+    tag: 12-debian-12-r50
+  extraDeploy:
+    - apiVersion: batch/v1
+      kind: Job
+      metadata:
+        name: elasticsearch-auto-setup
+        annotations:
+          helm.sh/hook: post-install,post-upgrade
+          helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+      spec:
+        template:
+          spec:
+            containers:
+              - name: setup
+                image: curlimages/curl:latest
+                command:
+                  - /bin/sh
+                  - -c
+                  - |
+                    for i in {1..30}; do
+                      if curl -s http://elasticsearch:9200 > /dev/null; then
+                        break
+                      fi
+                      sleep 10
+                    done
+                    curl -X PUT "http://elasticsearch:9200/_settings" \
+                      -H 'Content-Type: application/json' \
+                      -d '{"index": {"number_of_replicas": 0}}'
+            restartPolicy: Never
+
+logstash:
+  enabled: true
+  replicaCount: 1
+  fullnameOverride: logstash
+  image:
+    registry: docker.io
+    repository: bitnamilegacy/logstash
+    tag: 9.1.2-debian-12-r0
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "256m"
+    limits:
+      memory: "1Gi"
+      cpu: "500m"
+  configuration:
+    logstash.yml: |
+      http.host: "0.0.0.0"
+      xpack.monitoring.enabled: false
+  metrics:
+    enabled: false
+    logstash.conf: |
+      input {
+        kafka {
+          bootstrap_servers => "kafka:9092"
+          topics_pattern => "bankapp-logs-.*"
+          group_id => "logstash-bankapp"
+          codec => "json"
+          consumer_threads => 2
+          decorate_events => true
+        }
+      }
+      filter {
+        if [@metadata][kafka][headers][traceId] {
+          mutate {
+            add_field => { "trace_id" => "%{[@metadata][kafka][headers][traceId]}" }
+          }
+        }
+        if [@metadata][kafka][headers][userLogin] {
+          mutate {
+            add_field => { "user_login" => "%{[@metadata][kafka][headers][userLogin]}" }
+          }
+        }
+        if [@metadata][kafka][headers][serviceName] {
+          mutate {
+            add_field => { "service_name" => "%{[@metadata][kafka][headers][serviceName]}" }
+          }
+        }
+        if [@metadata][kafka][headers][parentSpanId] {
+          mutate {
+            add_field => { "parent_span_id" => "%{[@metadata][kafka][headers][parentSpanId]}" }
+          }
+        }
+        if [@metadata][kafka][headers][spanId] {
+          mutate {
+            add_field => { "span_id" => "%{[@metadata][kafka][headers][spanId]}" }
+          }
+        }
+
+        grok {
+          match => { 
+            "message" => "%{TIMESTAMP_ISO8601:timestamp} %{LOGLEVEL:log_level} \[%{DATA:thread}\] %{DATA:logger} - \[service:%{DATA:service},trace:%{DATA:trace},parent:%{DATA:parent},span:%{DATA:span},login:%{DATA:login}\] %{GREEDYDATA:log_message}"
+          }
+        }
+      
+        if [log_level] == "ERROR" {
+          mutate {
+            add_tag => ["error", "alert"]
+          }
+        }
+      
+        date {
+          match => [ "timestamp", "ISO8601" ]
+          target => "@timestamp"
+        }
+      }
+      
+      output {
+        elasticsearch {
+          hosts => ["http://bankapp-elasticsearch-master:9200"]
+          index => "bankapp-logs-%{+YYYY.MM.dd}"
+          document_type => "_doc"
+        }
+      
+        stdout {
+          codec => rubydebug
+        }
+      }
+  volumePermissions:
+    image:
+      registry: docker.io
+      repository: bitnamilegacy/os-shell
+      tag: 12-debian-12-r50
+      pullPolicy: IfNotPresent
+
+kibana:
+  enabled: true
+  replicaCount: 1
+  fullnameOverride: kibana
+  image:
+    registry: docker.io
+    repository: bitnamilegacy/kibana
+    tag: 9.1.2-debian-12-r0
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "250m"
+    limits:
+      memory: "1Gi"
+      cpu: "500m"
+  elasticsearch:
+    hosts:
+      - "elasticsearch"
+    port: "9200"
+    security:
+      auth:
+        enabled: false
+  extraEnvVars:
+    - name: "ELASTICSEARCH_HOSTS"
+      value: "http://elasticsearch:9200"
+    - name: "SERVER_HOST"
+      value: "0.0.0.0"
+service:
+  type: ClusterIP
+ingress:
+  enabled: true
+  hosts:
+    - host: kibana.local
+      paths:
+        - path: /
+  persistence:
+    enabled: false
+  metrics:
+    enabled: false
+  volumePermissions:
+    image:
+      registry: docker.io
+      repository: bitnamilegacy/os-shell
+      tag: 12-debian-12-r50
+      pullPolicy: IfNotPresent

@@ -82,11 +82,11 @@
 * получить образы сервисов
 ```bash
 ./gradlew bootJar
-docker build -f notifications/Dockerfile -t notifications .
-docker build -f accounts/Dockerfile -t accounts .
-docker build -f cash/Dockerfile -t cash .
-docker build -f transfer/Dockerfile -t transfer .
-docker build -f front/Dockerfile -t front .
+docker build -f notifications/Dockerfile -t bankapp/notifications:latest .
+docker build -f accounts/Dockerfile -t bankapp/accounts:latest .
+docker build -f cash/Dockerfile -t bankapp/cash:latest .
+docker build -f transfer/Dockerfile -t bankapp/transfer:latest .
+docker build -f front/Dockerfile -t bankapp/front:latest .
 ```
 
 * скачать зависимости (для postgresql, keycloak и kafka)
@@ -154,11 +154,6 @@ kubectl create secret generic kafka-secrets \
   --dry-run=client -o yaml | kubectl apply -f -  
 ```
 
-* установить чарт (в примере пространство имен bankapp)
-```bash
-helm upgrade --install bankapp . -n bankapp -f values.yaml
-```
-
 * в проекте предусмотрена настройка мониторинга через Prometheus и Grafana. Их необходимо установить в Kubernetis и связать с чартом
 ```bash
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
@@ -181,7 +176,17 @@ kubectl -n bankapp port-forward $POD_NAME 3000
 *
 ```
 
-Вход приложения осуществляется по адресу:<br>
+* установить чарт (в примере пространство имен bankapp)
+```bash
+helm upgrade --install bankapp . -n bankapp -f values.yaml
+```
+
+* для доступа в Kibana настроить /etc/hosts:
+```bash
+echo "127.0.0.1 kibana.local" | sudo tee -a /etc/hosts
+```
+
+Вход в приложение осуществляется по адресу:<br>
 http://bankapp/login
 
 Регистрация пользователя доступна на странице:<br>
@@ -203,6 +208,5 @@ sudo kubectl port-forward -n bankapp svc/ingress-nginx-controller 80:80
 Для автоматического развертывания приложения в Kubernetes после push'а в любую ветку
 ```bash
 cd jenkins
-docker compose up -d --build
+docker-compose up -d --build
 ```
-

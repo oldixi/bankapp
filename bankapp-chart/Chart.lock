@@ -29,5 +29,8 @@ dependencies:
 - name: common
   repository: file://./charts/common
   version: 0.1.0
-digest: sha256:2e90938a0bc0dac50af73d11193fe26a126816335fdb19ea3ba608ab9c0885d8
-generated: "2025-11-16T10:54:39.715406+03:00"
+- name: elk
+  repository: file://./charts/elk
+  version: 0.1.0
+digest: sha256:6d549cce91250f6b5cc5e5b94b042eaef66b224d2be12b71e89d597ee8bcc57e
+generated: "2025-11-19T19:20:35.8995+03:00"

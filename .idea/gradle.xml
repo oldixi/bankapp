@@ -14,7 +14,6 @@
             <option value="$PROJECT_DIR$/accounts/accounts-serv" />
             <option value="$PROJECT_DIR$/cash" />
             <option value="$PROJECT_DIR$/front" />
-            <option value="$PROJECT_DIR$/gateway" />
             <option value="$PROJECT_DIR$/notifications" />
             <option value="$PROJECT_DIR$/transfer" />
           </set>

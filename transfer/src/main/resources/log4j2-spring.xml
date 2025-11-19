@@ -9,7 +9,6 @@
         <Console name="Console" target="SYSTEM_OUT">
             <PatternLayout pattern="${LOG_PATTERN}"/>
         </Console>
-
         <Kafka name="Kafka" topic="bankapp-logs-${spring:spring.application.name}">
             <PatternLayout pattern="${LOG_PATTERN}"/>
             <Property name="bootstrap.servers">${KAFKA_BROKER}</Property>
@@ -26,14 +25,16 @@
     </Appenders>
 
     <Loggers>
+        <Logger name="org.apache.kafka" level="trace" additivity="false">
+            <AppenderRef ref="Console"/>
+        </Logger>
+        <Logger name="org.apache.logging.log4j.core.appender.mom.kafka" level="trace" additivity="false">
+            <AppenderRef ref="Console"/>
+        </Logger>
         <Root level="info">
             <AppenderRef ref="Kafka"/>
             <AppenderRef ref="Console"/>
             <AppenderRef ref="File"/>
         </Root>
-        <Logger name="org.apache.kafka" level="trace" >
-            <AppenderRef ref="Console"/>
-            <AppenderRef ref="File"/>
-        </Logger>
     </Loggers>
 </Configuration>

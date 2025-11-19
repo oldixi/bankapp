@@ -96,6 +96,10 @@ subprojects {
 	dependencies {
 		implementation 'org.springframework.boot:spring-boot-starter-actuator'
 		implementation 'org.springframework.boot:spring-boot-starter-log4j2'
+		configurations.configureEach {
+			exclude group: 'org.apache.logging.log4j', module: 'log4j-to-slf4j'
+			exclude group: 'ch.qos.logback', module: 'logback-classic'
+		}
 		implementation 'org.apache.kafka:kafka-clients'
 		implementation 'io.micrometer:micrometer-registry-prometheus'
 		implementation 'io.micrometer:micrometer-tracing-bridge-brave'
@@ -212,42 +216,42 @@ subprojects {
 
 	if (project.name == 'cash') {
 		group = 'ru.yandex'
-		version = '0.0.1-SNAPSHOT'
+		version = '1.0.0'
 	}
 
 	if (project.name == 'transfer') {
 		group = 'ru.yandex'
-		version = '0.0.1-SNAPSHOT'
+		version = '1.0.0'
 	}
 
 	if (project.name == 'notifications') {
 		group = 'ru.yandex'
-		version = '0.0.1-SNAPSHOT'
+		version = '1.0.0'
 	}
 
 	if (project.name == 'front') {
 		group = 'ru.yandex'
-		version = '0.0.1-SNAPSHOT'
+		version = '1.0.0'
 	}
 
 	if (project.name == 'account-serv') {
 		group = 'ru.yandex'
-		version = '0.0.1-SNAPSHOT'
+		version = '1.0.0'
 	}
 
 	if (project.name == 'accounts:account-serv') {
 		group = 'ru.yandex'
-		version = '0.0.1-SNAPSHOT'
+		version = '1.0.0'
 	}
 
 	if (project.name == 'accounts') {
 		group = 'ru.yandex'
-		version = '0.0.1-SNAPSHOT'
+		version = '1.0.0'
 	}
 
 	if (project.name == 'account-dto') {
 		group = 'ru.yandex'
-		version = '0.0.1-SNAPSHOT'
+		version = '1.0.0'
 	}
 }
 

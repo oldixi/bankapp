@@ -13,13 +13,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 
-import java.net.URI;
-import java.util.Arrays;
-import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 @Component
 @Slf4j
@@ -119,58 +115,5 @@ public class ELKInterceptor implements HandlerInterceptor {
             log.debug("getCurrentUserLogin: failed to get user login from security context", e);
         }
         return "anonymous";
-    }
-
-    private boolean isAuthenticated() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return authentication != null && authentication.isAuthenticated() &&
-                !(authentication instanceof AnonymousAuthenticationToken);
-    }
-
-    private String maskQueryParams(String queryString) {
-        if (StringUtils.isBlank(queryString)) {
-            return queryString;
-        }
-
-        Set<String> sensitiveParams = Set.of("password", "confirmPassword", "currentPassword", "newPassword",
-                "token", "access_token", "refresh_token", "authorization");
-
-        return Arrays.stream(queryString.split("&"))
-                .map(param -> {
-                    String[] keyValue = param.split("=", 2);
-                    if (keyValue.length == 2 && sensitiveParams.contains(keyValue[0])) {
-                        return keyValue[0] + "=***";
-                    }
-                    return param;
-                })
-                .collect(Collectors.joining("&"));
-    }
-
-    private String maskSensitiveData(String url) {
-        Set<String> sensitiveParams = Set.of("password", "confirmPassword", "currentPassword", "newPassword",
-                "token", "access_token", "refresh_token", "authorization");
-        try {
-            URI uri = URI.create(url);
-            String query = uri.getQuery();
-
-            if (StringUtils.isBlank(query)) {
-                return url;
-            }
-
-            String maskedQuery = Arrays.stream(query.split("&"))
-                    .map(param -> {
-                        String[] keyValue = param.split("=", 2);
-                        if (keyValue.length == 2 && sensitiveParams.contains(keyValue[0])) {
-                            return keyValue[0] + "=***";
-                        }
-                        return param;
-                    })
-                    .collect(Collectors.joining("&"));
-
-            return uri.getPath() + (StringUtils.isNotBlank(maskedQuery) ? "?" + maskedQuery : "");
-
-        } catch (Exception e) {
-            return url;
-        }
     }
 }

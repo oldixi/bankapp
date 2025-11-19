@@ -36,9 +36,7 @@ data:
               default:
                 connectTimeout: {{ .Values.common.global.spring.cloud.openfeign.client.config.default.connectTimeout }}
                 readTimeout: {{ .Values.common.global.spring.cloud.openfeign.client.config.default.readTimeout }}
-                loggerLevel: {{ .Values.common.global.spring.cloud.openfeign.client.config.default.loggerLevel }}
-                requestInterceptors:
-                  - com.bankapp.common.feign.FeignTraceInterceptor                
+                loggerLevel: {{ .Values.common.global.spring.cloud.openfeign.client.config.default.loggerLevel }}               
     management:
       zipkin:
         tracing:

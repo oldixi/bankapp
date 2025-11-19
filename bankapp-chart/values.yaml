@@ -10,30 +10,35 @@ accounts:
   fullnameOverride: "accounts"
   ingress:
     enabled: true
+  pullPolicy: Always
 
 cash:
   enabled: true
   fullnameOverride: "cash"
   ingress:
     enabled: true
+  pullPolicy: Always
 
 transfer:
   enabled: true
   fullnameOverride: "transfer"
   ingress:
     enabled: true
+  pullPolicy: Always
 
 notifications:
   enabled: true
   fullnameOverride: "notifications"
   ingress:
     enabled: true
+  pullPolicy: Always
 
 front:
   enabled: true
   fullnameOverride: "front"
   ingress:
     enabled: true
+  pullPolicy: Always
 
 common:
   enabled: true
@@ -232,7 +237,6 @@ kafka:
     size: 1Gi
     logPersistence:
       enabled: true
-  #clusterId: "bankapp"
   existingKraftSecret: "kafka-secrets"
   kraftVersion: 1
   service:
@@ -263,7 +267,7 @@ kafka:
       enabled: false
 
 zipkin:
-  enabled: true
+  enabled: false
   fullnameOverride: zipkin
   image:
     repository: openzipkin/zipkin
@@ -283,3 +287,17 @@ zipkin:
     limits:
       memory: "1Gi"
       cpu: "500m"
+
+elk:
+  enabled: true
+
+  elasticsearch:
+    enabled: true
+
+  logstash:
+    enabled: true
+
+  kibana:
+    enabled: true
+    service:
+      type: NodePort

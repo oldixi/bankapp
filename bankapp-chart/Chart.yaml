@@ -3,7 +3,6 @@ name: bankapp-chart
 description: A Helm chart for Kubernetes
 type: application
 version: 0.1.0
-appVersion: "0.0.1"
 dependencies:
   - name: keycloak
     version: 25.2.0
@@ -48,3 +47,7 @@ dependencies:
     version: 0.1.0
     repository: "file://./charts/common"
     condition: common.enabled
+  - name: elk
+    version: 0.1.0
+    repository: "file://./charts/elk"
+    condition: elk.enabled

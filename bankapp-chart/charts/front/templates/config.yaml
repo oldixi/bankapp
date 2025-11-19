@@ -54,14 +54,6 @@ data:
       config:
         default:
           retryer: {{ .Values.common.global.feign.config.default.retryer }}       
-      client:
-        config:
-          default:
-            connectTimeout: {{ .Values.common.global.spring.cloud.openfeign.client.config.default.connectTimeout }}
-            readTimeout: {{ .Values.common.global.spring.cloud.openfeign.client.config.default.readTimeout }}
-            loggerLevel: {{ .Values.common.global.spring.cloud.openfeign.client.config.default.loggerLevel }}
-            requestInterceptors:
-              - com.bankapp.common.feign.FeignTraceInterceptor
     logging:
       level:
         org.springframework.cloud.openfeign: DEBUG

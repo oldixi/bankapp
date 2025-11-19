@@ -75,3 +75,4 @@ data:
         web:
           exposure:
             include: {{ .Values.common.global.management.endpoints.web.exposure.include }}
+          enabled-by-default: true
